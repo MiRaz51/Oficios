@@ -1,0 +1,52 @@
+[
+    {
+        "name": "calificaciones",
+        "type": "base",
+        "schema": [
+            {
+                "name": "match_id",
+                "type": "text",
+                "required": true,
+                "unique": true,
+                "options": {
+                    "max": 15
+                }
+            },
+            {
+                "name": "profesional_id",
+                "type": "text",
+                "required": true,
+                "options": {
+                    "max": 20
+                }
+            },
+            {
+                "name": "rating",
+                "type": "number",
+                "required": true,
+                "options": {
+                    "min": 1,
+                    "max": 5
+                }
+            },
+            {
+                "name": "comentario",
+                "type": "text",
+                "required": false,
+                "options": {
+                    "max": 500
+                }
+            },
+            {
+                "name": "verificada",
+                "type": "bool",
+                "required": false
+            }
+        ],
+        "listRule": "verificada = true",
+        "viewRule": "verificada = true",
+        "createRule": "",
+        "updateRule": null,
+        "deleteRule": null
+    }
+]
