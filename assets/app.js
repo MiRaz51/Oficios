@@ -20,6 +20,47 @@ let __crossTimer = null;
 let __lastProfilesLoad = 0; // Marca de tiempo del último load completo de perfiles
 let __cachedIP = null;      // Cache de IP pública para evitar múltiples llamadas externas
 
+const __CACHE_KEY_PERFILES = 'cache_oficios_v1';
+const __CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutos
+
+function __initFuse() {
+    const options = {
+        keys: ['nombre', 'oficio', 'habilidades'],
+        threshold: 0.4,
+        ignoreLocation: true
+    };
+    __fuse = new Fuse(__allProfiles, options);
+}
+
+function __tryLoadProfilesCache() {
+    try {
+        const raw = localStorage.getItem(__CACHE_KEY_PERFILES);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        const ts = Number(parsed?.ts || 0);
+        const data = parsed?.data;
+        if (!ts || !Array.isArray(data)) return false;
+
+        const age = Date.now() - ts;
+        if (age > __CACHE_MAX_AGE_MS) return false;
+
+        __allProfiles = data;
+        __allProfiles = __allProfiles.filter(p => p.estado !== 'inactiva');
+        __initFuse();
+        __lastProfilesLoad = ts;
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+function __trySaveProfilesCache() {
+    try {
+        localStorage.setItem(__CACHE_KEY_PERFILES, JSON.stringify({ ts: Date.now(), data: __allProfiles }));
+    } catch (_) {
+    }
+}
+
 async function refreshAuthIfNeeded() {
     try {
         if (!window.pb || !window.pb.authStore || !window.pb.authStore.token) {
@@ -108,7 +149,8 @@ async function cargarTodosLosPerfiles() {
         const records = await pb.collection(COLLECTION_PERFILES).getFullList({
             sort: 'nombre',
             // Mostrar todos los perfiles (aprobados y pendientes)
-            fields: 'id,nombre,oficio,habilidades,thabilidades,ubicacion,disponibilidad,modalidad,ratingpromedio,totalcalificaciones,totalcontactos,whatsapp,estado'
+            // Incluimos created/updated para poder ordenar por fecha en el cliente
+            fields: 'id,nombre,oficio,habilidades,thabilidades,ubicacion,disponibilidad,modalidad,ratingpromedio,totalcalificaciones,totalcontactos,whatsapp,estado,created,updated'
         });
 
         __allProfiles = records.map(r => {
@@ -134,17 +176,18 @@ async function cargarTodosLosPerfiles() {
                 total_calificaciones: r.totalcalificaciones || 0,
                 total_contactos: r.totalcontactos || 0,
                 whatsapp: r.whatsapp || '',
-                estado: r.estado || 'pendiente'
+                estado: r.estado || 'pendiente',
+                created: r.created,
+                updated: r.updated
             };
         });
 
-        // Inicializar Fuse.js para búsqueda difusa
-        const options = {
-            keys: ['nombre', 'oficio', 'habilidades'],
-            threshold: 0.4,
-            ignoreLocation: true
-        };
-        __fuse = new Fuse(__allProfiles, options);
+        // Ocultar del catálogo público los perfiles marcados explícitamente como inactivos
+        __allProfiles = __allProfiles.filter(p => p.estado !== 'inactiva');
+
+        __initFuse();
+
+        __trySaveProfilesCache();
 
         __lastProfilesLoad = Date.now();
         return __allProfiles;
@@ -157,7 +200,7 @@ async function cargarTodosLosPerfiles() {
 /**
  * Filtra los perfiles en memoria usando Fuse.js y filtros exactos
  */
-function filtrarPerfilesLocalmente({ q = '', oficio = '', ubicacion = '', disponibilidad = '' } = {}) {
+function filtrarPerfilesLocalmente({ q = '', oficio = '', ubicacion = '', disponibilidad = '', ratingMin = null } = {}) {
     let resultados = [];
 
     // 1. Filtrado por texto (Fuzzy)
@@ -180,6 +223,14 @@ function filtrarPerfilesLocalmente({ q = '', oficio = '', ubicacion = '', dispon
     if (oficio) resultados = resultados.filter(p => p.oficio === oficio);
     if (ubicacion) resultados = resultados.filter(p => p.ubicacion === ubicacion);
     if (disponibilidad) resultados = resultados.filter(p => p.disponibilidad === disponibilidad);
+
+    // 3. Filtro por rating mínimo
+    if (ratingMin != null) {
+        resultados = resultados.filter(p => {
+            const r = Number(p.rating_promedio) || 0;
+            return r >= ratingMin;
+        });
+    }
 
     return resultados;
 }
@@ -567,26 +618,44 @@ window.addEventListener('load', async () => {
     bloquearUI(true);
     try {
         setupEventListeners();
-        await refreshAuthIfNeeded();
-        actualizarIndicadorSesion();
         setupScrollDetection();
 
         // Asegurar que el modal de registro esté cerrado al inicio
         $('#dlgRegistro')?.close();
 
-        // Cargar TODOS los datos al inicio
-        await cargarTodosLosPerfiles();
+        // Actualizar sesión sin bloquear la UI en conexiones lentas
+        actualizarIndicadorSesion();
+        refreshAuthIfNeeded().then(() => {
+            actualizarIndicadorSesion();
+        });
 
-        // Inicializar UI con los datos cargados
-        cargarCatalogosUI();
-        cargarPerfilesUI();
+        // Pintar lo antes posible desde caché si existe
+        const loadedFromCache = __tryLoadProfilesCache();
+        if (loadedFromCache) {
+            cargarCatalogosUI();
+            cargarPerfilesUI();
+        }
 
+        // Cargar desde servidor en background y luego refrescar UI
+        cargarTodosLosPerfiles().then(() => {
+            cargarCatalogosUI();
+            cargarPerfilesUI();
+        }).catch((e) => {
+            console.error('Error cargando perfiles:', e);
+            if (!loadedFromCache) {
+                alert('Hubo un error cargando los perfiles. Inténtalo de nuevo más tarde.');
+            }
+        }).finally(() => {
+            bloquearUI(false);
+        });
+
+        return;
     } catch (e) {
         console.error("Error fatal iniciando app:", e);
         alert("Error iniciando la aplicación. Revisa la consola.");
-    } finally {
-        bloquearUI(false);
     }
+
+    bloquearUI(false);
 });
 
 // Refrescar datos cuando la pestaña vuelve a tener el foco
@@ -640,13 +709,16 @@ function setupEventListeners() {
     });
 
     // Filtros
-    ['selOficio', 'selUbicacion'].forEach(id => {
+    ['selOficio', 'selUbicacion', 'selRatingMin'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             const origin = id === 'selOficio' ? 'oficio' : 'ubicacion';
             el.addEventListener('change', () => {
                 cargarPerfilesUI();
-                actualizarFiltrosCruzadosUI(origin);
+                // El filtro de rating no afecta a los catálogos, sólo recarga la lista
+                if (id !== 'selRatingMin') {
+                    actualizarFiltrosCruzadosUI(origin);
+                }
             });
         }
     });
@@ -737,12 +809,21 @@ function cargarPerfilesUI() {
 
     try {
         const items = filtrarPerfilesLocalmente(params);
+        // Guardar referencia base antes de ordenar
         __currentItems = items;
 
         if (!params.q) {
-            // Orden inicial por rating: mayor a menor
-            ordenarItemsLocalmente('rating_promedio', 'desc');
+            // Orden inicial por fecha de publicación: más recientes primero
+            const sorted = [...items].sort((a, b) => {
+                const fechaA = new Date(a.created || a.updated || 0).getTime();
+                const fechaB = new Date(b.created || b.updated || 0).getTime();
+                return fechaB - fechaA;
+            });
+
+            __currentItems = sorted;
+            renderTabla(sorted);
         } else {
+            // Con búsqueda de texto, respetar el orden resultante de Fuse y filtros
             renderTabla(items);
         }
 
@@ -864,7 +945,12 @@ async function uiContactarWhatsApp(arg) {
             const url = `https://wa.me/${telefono}?text=${mensaje}`;
             window.open(url, '_blank');
 
-            alert('Ya existe un enlace de calificación activo para este profesional.\n\nNo se ha generado uno nuevo para evitar duplicados.');
+            const msgLinkActivo = 'Ya existe un enlace de calificación activo para este profesional. No se ha generado uno nuevo para evitar duplicados.';
+            if (typeof window.showToast === 'function') {
+                window.showToast(msgLinkActivo, 'info');
+            } else {
+                alert(msgLinkActivo);
+            }
 
             // Actualizar botones por si el estado cambió previamente
             const dataFull = await obtenerPerfilPorId(profesionalId);
@@ -876,14 +962,24 @@ async function uiContactarWhatsApp(arg) {
         // 2) Si no hay match pendiente, crear uno nuevo con su link de calificación
         await crearMatchYContactar(profesionalId, perfil);
 
-        alert('Contacto registrado. Ahora podrás calificar este servicio después de trabajar con el profesional.');
+        const msgContacto = 'Contacto registrado. Ahora podrás calificar este servicio después de trabajar con el profesional.';
+        if (typeof window.showToast === 'function') {
+            window.showToast(msgContacto, 'success');
+        } else {
+            alert(msgContacto);
+        }
 
         // Actualizar botones para mostrar opción de calificar
         const dataFull = await obtenerPerfilPorId(profesionalId);
         actualizarBotonesAccion(dataFull);
 
     } catch (e) {
-        alert('Error: ' + e.message);
+        const msgErr = 'Error al registrar el contacto: ' + e.message;
+        if (typeof window.showToast === 'function') {
+            window.showToast(msgErr, 'error');
+        } else {
+            alert(msgErr);
+        }
     } finally {
         limpiarMensajeCarga();
     }
@@ -892,7 +988,12 @@ async function uiContactarWhatsApp(arg) {
 async function uiMostrarFormularioCalificacion() {
     const matchValido = puedeCalificar(__currentPerfilId);
     if (!matchValido) {
-        alert('No tienes un contacto válido con este profesional para calificar.');
+        const msgNoMatch = 'No tienes un contacto válido con este profesional para calificar.';
+        if (typeof window.showToast === 'function') {
+            window.showToast(msgNoMatch, 'error');
+        } else {
+            alert(msgNoMatch);
+        }
         return;
     }
 
@@ -905,7 +1006,12 @@ async function uiMostrarFormularioCalificacion() {
 async function uiEnviarCalificacion() {
     const matchValido = puedeCalificar(__currentPerfilId);
     if (!matchValido) {
-        alert('No tienes un contacto válido con este profesional.');
+        const msgNoMatch = 'No tienes un contacto válido con este profesional.';
+        if (typeof window.showToast === 'function') {
+            window.showToast(msgNoMatch, 'error');
+        } else {
+            alert(msgNoMatch);
+        }
         return;
     }
 
@@ -913,7 +1019,12 @@ async function uiEnviarCalificacion() {
     const comentario = $('#comentarioCalificacion')?.value.trim() || '';
 
     if (rating < 1 || rating > 5) {
-        alert('Por favor selecciona una calificación de 1 a 5 estrellas.');
+        const msgRating = 'Por favor selecciona una calificación de 1 a 5 estrellas.';
+        if (typeof window.showToast === 'function') {
+            window.showToast(msgRating, 'error');
+        } else {
+            alert(msgRating);
+        }
         return;
     }
 
@@ -922,7 +1033,12 @@ async function uiEnviarCalificacion() {
 
         await registrarCalificacion(matchValido.matchId, __currentPerfilId, rating, comentario);
 
-        alert('¡Calificación enviada con éxito! Gracias por tu feedback.');
+        const msgOk = '¡Calificación enviada con éxito! Gracias por tu feedback.';
+        if (typeof window.showToast === 'function') {
+            window.showToast(msgOk, 'success');
+        } else {
+            alert(msgOk);
+        }
 
         // Cerrar modal de calificación
         $('#dlgCalificar')?.close();
@@ -936,7 +1052,12 @@ async function uiEnviarCalificacion() {
         cargarPerfilesUI();
 
     } catch (e) {
-        alert('Error: ' + e.message);
+        const msgErr = 'Error al enviar la calificación: ' + e.message;
+        if (typeof window.showToast === 'function') {
+            window.showToast(msgErr, 'error');
+        } else {
+            alert(msgErr);
+        }
     } finally {
         limpiarMensajeCarga();
     }
@@ -1139,6 +1260,7 @@ function resetearFiltros() {
     $('#q').value = '';
     $('#selOficio').value = '';
     $('#selUbicacion').value = '';
+    $('#selRatingMin') && ($('#selRatingMin').value = '');
 
     cargarCatalogosUI();
     cargarPerfilesUI();
@@ -1147,10 +1269,14 @@ function resetearFiltros() {
 // --- Helpers de Renderizado y DOM ---
 
 function obtenerParametrosFiltros() {
+    const ratingMinStr = $('#selRatingMin')?.value || '';
+    const ratingMin = ratingMinStr ? Number(ratingMinStr) : null;
+
     return {
         q: $('#q')?.value.trim() || '',
         oficio: $('#selOficio')?.value || '',
-        ubicacion: $('#selUbicacion')?.value || ''
+        ubicacion: $('#selUbicacion')?.value || '',
+        ratingMin: ratingMin && !isNaN(ratingMin) ? ratingMin : null
     };
 }
 
@@ -1163,11 +1289,17 @@ function renderTabla(items) {
         const habilidadesMostrar = item.habilidades.slice(0, 3).join(', ');
         const masHabilidades = item.habilidades.length > 3 ? ` +${item.habilidades.length - 3}` : '';
         const estrellas = renderEstrellas(item.rating_promedio);
+        const badgeHtml = getBadgeConfiabilidad(Number(item.rating_promedio) || 0, Number(item.total_calificaciones) || 0);
 
         return `
         <tr>
+            <td data-label="Oficio">
+                <div>
+                    <div>${esc(item.oficio)}</div>
+                    ${badgeHtml ? `<div style="margin-top: 0.15rem;">${badgeHtml}</div>` : ''}
+                </div>
+            </td>
             <td data-label="Nombre">${esc(item.nombre)}</td>
-            <td data-label="Oficio">${esc(item.oficio)}</td>
             <td data-label="Ubicación">${esc(item.ubicacion)}</td>
             <td data-label="Rating" class="rating-cell">
                 <div class="rating-content">
@@ -1188,8 +1320,8 @@ function renderTabla(items) {
     el.innerHTML = `
     <table>
         <thead><tr>
-            <th class="sortable" data-col="nombre">Nombre${sortIcon('nombre')}</th>
             <th class="sortable" data-col="oficio">Oficio${sortIcon('oficio')}</th>
+            <th class="sortable" data-col="nombre">Nombre${sortIcon('nombre')}</th>
             <th class="sortable" data-col="ubicacion">Ubicación${sortIcon('ubicacion')}</th>
             <th class="sortable" data-col="rating_promedio">Rating${sortIcon('rating_promedio')}</th>
             <th class="no-print">Acciones</th>
@@ -1402,6 +1534,7 @@ function actualizarEstadisticas(items) {
             if (params.q) txt.push(`Búsqueda: "${params.q}"`);
             if (params.oficio) txt.push(`Oficio: ${params.oficio}`);
             if (params.ubicacion) txt.push(`Ubicación: ${params.ubicacion}`);
+            if (params.ratingMin != null) txt.push(`Rating ≥ ${params.ratingMin.toFixed ? params.ratingMin.toFixed(1) : params.ratingMin}`);
             divFiltros.textContent = 'Filtros: ' + txt.join(' | ');
         }
     }

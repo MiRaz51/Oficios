@@ -15,8 +15,83 @@
 
   const params = new URLSearchParams(window.location.search);
   // cuenta.html está en la carpeta /assets, así que redirigimos a archivos hermanos
-  const returnTo = params.get('return') === 'ofertas' ? 'ofertas.html' : 'oficios.html';
+  const ret = params.get('return');
+  const returnTo = ret === 'publicaciones' ? 'publicaciones.html' : (ret === 'ofertas' ? 'ofertas.html' : 'oficios.html');
   const mode = params.get('mode'); // 'login' o 'registro'
+
+  function withTimeout(promise, ms) {
+    return new Promise((resolve, reject) => {
+      let timerId = null;
+      timerId = setTimeout(() => reject(new Error('timeout')), ms);
+      Promise.resolve(promise)
+        .then((v) => {
+          if (timerId) clearTimeout(timerId);
+          resolve(v);
+        })
+        .catch((e) => {
+          if (timerId) clearTimeout(timerId);
+          reject(e);
+        });
+    });
+  }
+
+  function prewarmPocketBase() {
+    try {
+      const base = window.POCKETBASE_URL;
+      if (!base || typeof base !== 'string') return;
+      fetch(base.replace(/\/+$/, '') + '/api/health', { cache: 'no-store' }).catch(() => { });
+    } catch (_) {
+    }
+  }
+
+  let __pbHealthMs = null;
+  let __pbDbReadMs = null;
+
+  async function medirSaludPocketBase() {
+    try {
+      const base = window.POCKETBASE_URL;
+      if (!base || typeof base !== 'string') return null;
+      const url = base.replace(/\/+$/, '') + '/api/health';
+      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      await fetch(url, { cache: 'no-store' });
+      const t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      __pbHealthMs = Math.max(0, t1 - t0);
+      return __pbHealthMs;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function medirLecturaDbPocketBase() {
+    try {
+      const base = window.POCKETBASE_URL;
+      if (!base || typeof base !== 'string') return null;
+
+      const baseUrl = base.replace(/\/+$/, '');
+      const candidates = [
+        baseUrl + '/api/collections/oficios/records?page=1&perPage=1&skipTotal=1',
+        baseUrl + '/api/collections/ofertas/records?page=1&perPage=1&skipTotal=1',
+      ];
+
+      for (const url of candidates) {
+        const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const res = await fetch(url, { cache: 'no-store' });
+        const t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const ms = Math.max(0, t1 - t0);
+
+        // Si devuelve 200 asumimos que es una lectura real a DB.
+        // Si no es 200, igual nos sirve como señal de latencia, pero intentamos otro endpoint.
+        if (res && res.ok) {
+          __pbDbReadMs = ms;
+          return __pbDbReadMs;
+        }
+      }
+
+      return __pbDbReadMs;
+    } catch (_) {
+      return null;
+    }
+  }
 
   function setMensaje(texto, tipo = 'info') {
     if (!mensaje) return;
@@ -29,6 +104,17 @@
         mensaje.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } catch (_) {
         // scrollIntoView puede no estar disponible en algunos navegadores antiguos
+      }
+    }
+
+    // Complementar con notificación tipo toast para errores y éxitos
+    if (typeof window !== 'undefined' && typeof window.showToast === 'function' && texto) {
+      if (tipo === 'error' || tipo === 'success') {
+        try {
+          window.showToast(texto, tipo);
+        } catch (_) {
+          // Si falla el toast, no rompemos la UI de mensajes
+        }
       }
     }
   }
@@ -65,6 +151,10 @@
 
   tabRegistro?.addEventListener('click', setModeRegistro);
   tabLogin?.addEventListener('click', setModeLogin);
+
+  prewarmPocketBase();
+  medirSaludPocketBase();
+  medirLecturaDbPocketBase();
 
   // Botón dentro del formulario de login para ir a crear cuenta
   if (btnIrRegistroDesdeLogin) {
@@ -259,7 +349,9 @@
     setMensaje('Iniciando sesión...', 'info');
 
     try {
-      const authData = await pb.collection('users').authWithPassword(email, password);
+      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      const authData = await withTimeout(pb.collection('users').authWithPassword(email, password), 30000);
+      const t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
       const user = authData?.record;
 
       if (!user) {
@@ -271,13 +363,23 @@
         return;
       }
 
-      setMensaje('Sesión iniciada correctamente. Redirigiendo...', 'success');
+      const elapsedMs = Math.max(0, t1 - t0);
+      const elapsedStr = (elapsedMs / 1000).toFixed(1);
+      const healthStr = (__pbHealthMs != null) ? ` | ping ${(Math.max(0, __pbHealthMs) / 1000).toFixed(1)}s` : '';
+      const dbStr = (__pbDbReadMs != null) ? ` | db ${(Math.max(0, __pbDbReadMs) / 1000).toFixed(1)}s` : '';
+      setMensaje(`Sesión iniciada correctamente (${elapsedStr}s${healthStr}${dbStr}). Redirigiendo...`, 'success');
       setTimeout(() => {
         window.location.href = returnTo;
       }, 800);
 
     } catch (err) {
       console.error('[Cuenta] Error iniciando sesión:', err);
+
+      if (err && err.message === 'timeout') {
+        setMensaje('El servidor está tardando en responder. Puede estar iniciándose. Inténtalo de nuevo en unos segundos.', 'error');
+        return;
+      }
+
       let msg = err?.message || 'Error desconocido iniciando sesión.';
       if (err?.data?.data) {
         const details = Object.entries(err.data.data)

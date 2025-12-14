@@ -53,7 +53,8 @@
 
     const user = pb?.authStore?.model;
     if (!user) {
-      icon.textContent = '⏻';
+      // Sin sesión: mostrar texto simple para compatibilidad máxima en móviles
+      icon.textContent = 'Menú';
       container.classList.add('user-menu-loggedout');
       container.classList.remove('user-menu-loggedin');
 
@@ -106,6 +107,7 @@
     const btnLogin = document.getElementById('btnLoginCuenta');
     const btnRegistro = document.getElementById('btnRegistroCuenta');
     const btnCambiarVista = document.getElementById('btnCambiarVista');
+    const btnMisPublicaciones = document.getElementById('btnMisPublicaciones');
 
     if (btn && dropdown) {
       // Ocultar por defecto
@@ -139,6 +141,17 @@
           return;
         }
         window.location.href = 'perfil.html';
+      });
+    }
+
+    if (btnMisPublicaciones) {
+      btnMisPublicaciones.addEventListener('click', () => {
+        const user = pb?.authStore?.model;
+        if (!user) {
+          window.location.href = 'cuenta.html?mode=login&return=publicaciones';
+          return;
+        }
+        window.location.href = 'publicaciones.html';
       });
     }
 
@@ -178,10 +191,15 @@
   }
 
   async function initUserMenu() {
-    await refreshAuthIfNeeded();
     updateUserMenu();
     setupUserMenuEvents();
     resetInactividadTimer();
+
+    // Refrescar en background para no bloquear la UI en conexiones lentas
+    refreshAuthIfNeeded().then(() => {
+      updateUserMenu();
+      resetInactividadTimer();
+    });
   }
 
   window.addEventListener('load', () => {

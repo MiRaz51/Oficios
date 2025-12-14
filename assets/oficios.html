@@ -33,18 +33,24 @@
       <select id="selUbicacion">
         <option value="">Todas las ubicaciones</option>
       </select>
+      <select id="selRatingMin">
+        <option value="">Todos los ratings</option>
+        <option value="4">⭐ 4.0 o más</option>
+        <option value="3">⭐ 3.0 o más</option>
+      </select>
       <button id="btnReset" class="secondary">Limpiar</button>
 
       <button id="btnSoyProfesional" class="primary">🔎 Tengo un oficio</button>
 
       <div id="userMenu" class="user-menu">
         <button id="btnUserMenu" type="button" class="user-menu-button" aria-label="Menú de usuario">
-          <span id="userMenuIcon" class="user-menu-icon">Menú</span>
+          <span id="userMenuIcon" class="user-menu-icon">Menú ⋮</span>
         </button>
         <div id="userMenuDropdown" class="user-menu-dropdown">
           <button type="button" id="btnLoginCuenta">Iniciar sesión</button>
           <button type="button" id="btnRegistroCuenta">Crear cuenta</button>
           <button type="button" id="btnMiPerfil">Mi perfil</button>
+          <button type="button" id="btnMisPublicaciones">Mis publicaciones</button>
           <button type="button" id="btnCambiarVista">Ver ofertas</button>
           <button type="button" id="btnLogout">Cerrar sesión</button>
         </div>

@@ -9,6 +9,10 @@ const POCKETBASE_URL = (window.location.hostname === 'localhost' || window.locat
 
 const pb = new PocketBase(POCKETBASE_URL);
 
+try {
+  fetch(String(POCKETBASE_URL).replace(/\/+$/, '') + '/api/health', { cache: 'no-store' }).catch(() => { });
+} catch (_) { }
+
 // Deshabilitar auto-cancelación para evitar errores en peticiones rápidas
 if (pb && typeof pb.autoCancellation === 'function') {
   pb.autoCancellation(false);

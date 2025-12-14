@@ -68,6 +68,70 @@ function setupMarkdownDialog(options) {
   }
 }
 
+// ========== SISTEMA DE NOTIFICACIONES TIPO TOAST ==========
+
+function ensureToastContainer() {
+  var existing = document.getElementById('toastContainer');
+  if (existing) return existing;
+
+  var container = document.createElement('div');
+  container.id = 'toastContainer';
+  container.className = 'toast-container';
+  document.body.appendChild(container);
+  return container;
+}
+
+/**
+ * Muestra una notificación tipo toast.
+ * @param {string} message Mensaje a mostrar
+ * @param {('success'|'error'|'info')} [type] Tipo visual
+ * @param {{timeout?: number}} [options] Opciones
+ */
+window.showToast = function showToast(message, type, options) {
+  try {
+    var container = ensureToastContainer();
+
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    if (type) {
+      toast.classList.add('toast-' + type);
+    }
+
+    toast.textContent = message || '';
+
+    container.appendChild(toast);
+
+    // Forzar reflujo para permitir transición de entrada
+    void toast.offsetWidth; // eslint-disable-line no-unused-expressions
+    toast.classList.add('toast-visible');
+
+    // Duraciones por defecto según tipo
+    var baseTimeout;
+    if (type === 'error') {
+      baseTimeout = 4500; // errores un poco más largos
+    } else if (type === 'success') {
+      baseTimeout = 2200; // éxitos rápidos
+    } else {
+      baseTimeout = 3000; // info intermedio
+    }
+
+    var timeout = (options && options.timeout) || baseTimeout;
+
+    setTimeout(function () {
+      toast.classList.remove('toast-visible');
+      toast.classList.add('toast-hiding');
+      setTimeout(function () {
+        if (toast.parentNode === container) {
+          container.removeChild(toast);
+        }
+      }, 400);
+    }, timeout);
+  } catch (e) {
+    // Fallback silencioso para no romper la app si algo falla
+    // En el peor caso, no se muestra el toast.
+  }
+};
+
 window.addEventListener('DOMContentLoaded', function () {
   // Diálogo de Guía de Usuario (usa README como contenido de ayuda)
   setupMarkdownDialog({

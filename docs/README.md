@@ -78,7 +78,7 @@ Todo funciona directamente desde el navegador, sin necesidad de instalar nada.
 ## Sesión, seguridad y privacidad (resumen)
 
 - Para **publicar oficios u ofertas** es necesario tener una **cuenta de usuario** y haber iniciado sesión.  
-- El acceso se realiza mediante **correo electrónico + contraseña**, gestionados por PocketBase.  
+- El acceso se realiza mediante **correo electrónico + contraseña**.  
 - El sistema cierra la sesión automáticamente tras un periodo de **inactividad prolongada**, por seguridad.  
 - No se almacenan contraseñas de WhatsApp ni se gestionan chats desde la web; sólo se crean enlaces de contacto.
 
@@ -89,8 +89,6 @@ Para más detalles sobre tratamiento de datos y condiciones legales, consulta lo
 ## Aspectos técnicos (resumen)
 
 - Aplicación web estática (HTML, CSS y JavaScript) servida como **PWA instalable** en dispositivos móviles y escritorio.  
-- Uso de **PocketBase** como backend ligero para usuarios, oficios, ofertas, matches y calificaciones.  
-- En desarrollo se utiliza una instancia local (`http://127.0.0.1:8090`) y en producción una instancia desplegada en la nube (Railway).  
 - Soporte de **modo offline básico** mediante *service worker* que cachea el esqueleto de la app para que cargue más rápido.  
 - Comunicación por **HTTPS** en despliegues productivos correctamente configurados.
  

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b111b" />
+  <title>Mis publicaciones - Empleos en Comunidad</title>
+  <meta name="description" content="Gestiona la visibilidad de tus oficios y ofertas publicadas." />
+  <link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials" />
+  <link rel="icon" type="image/svg+xml" sizes="192x192" href="../icons/icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="512x512" href="../icons/icon-512.svg" />
+  <link rel="apple-touch-icon" href="../icons/icon-192.svg" />
+  <link rel="stylesheet" href="styles.base.css" />
+  <link rel="stylesheet" href="styles.layout.css" />
+  <link rel="stylesheet" href="styles.components.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <a href="../index.html" class="back-link">← Volver al inicio</a>
+    <h1>Mis publicaciones</h1>
+
+    <section id="publicacionesContenido">
+      <p>Gestiona aquí la visibilidad de tus oficios y ofertas.</p>
+      <div class="actions-row">
+        <button id="btnDesactivarTodas" class="secondary">Desactivar todas</button>
+        <button id="btnReactivarTodas" class="secondary">Reactivar todas</button>
+      </div>
+
+      <div class="publicaciones-row">
+        <div class="publicaciones-col">
+          <h2>Oficios publicados</h2>
+          <div id="listaOficiosUsuario" class="publicaciones-lista"></div>
+        </div>
+
+        <div class="publicaciones-col">
+          <h2>Ofertas publicadas</h2>
+          <div id="listaOfertasUsuario" class="publicaciones-lista"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="publicacionesNoSesion" style="display:none;">
+      <p>Debes iniciar sesión para ver y gestionar tus publicaciones.</p>
+      <button id="btnIrLoginPublicaciones" class="primary">Iniciar sesión</button>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
+  <script src="core.pb.js"></script>
+  <script src="core.ui.js"></script>
+  <script src="usuario.js"></script>
+  <script src="publicaciones.js"></script>
+</body>
+</html>

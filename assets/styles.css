@@ -120,6 +120,56 @@
   letter-spacing: 0.01em;
 }
 
+/* ========== TOASTS (NOTIFICACIONES) ========== */
+.toast-container {
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none; /* No bloquea clics en el resto de la UI */
+}
+
+.toast {
+  min-width: 260px;
+  max-width: 90vw;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f9fafb;
+  font-size: 0.9rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.45);
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  pointer-events: auto;
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.toast-hiding {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #b91c1c, #ef4444);
+}
+
+.toast-info {
+  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+}
+
 .toolbar .help-btn {
   background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-dark) 100%);
   color: white;
@@ -343,6 +393,13 @@ td {
   font-weight: 400;
 }
 
+/* Resaltar la columna "Oficio" en la tabla de oficios */
+th.sortable[data-col="oficio"],
+td[data-label="Oficio"] {
+  font-weight: 700;
+  color: #111827; /* un poco más oscuro que el texto normal */
+}
+
 /* ========== BADGES PREMIUM ========== */
 /* ========== BADGES PREMIUM ========== */
 .estado-badge {
@@ -527,6 +584,17 @@ td {
     flex: 1;
     justify-content: center;
     padding: 0.75rem;
+  }
+
+  /* Botón de menú en móvil: quepa el texto "Menú" completo */
+  .user-menu-button {
+    width: auto;
+    min-width: 3.5rem;
+    padding: 0 0.75rem;
+  }
+
+  .user-menu-icon {
+    font-size: 0.9rem;
   }
 
   /* Tarjetas de oficios en móvil: refuerzo visual tipo oferta-card */
@@ -1116,12 +1184,12 @@ dialog::backdrop {
 .badge-confiabilidad {
   display: inline-flex;
   align-items: center;
-  padding: 0.625rem 1.25rem;
+  padding: 0.25rem 0.75rem;
   border-radius: var(--radius-full);
-  font-size: 0.875rem;
-  font-weight: 700;
-  margin-top: var(--space-sm);
-  box-shadow: var(--shadow-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 0.1rem;
+  box-shadow: var(--shadow-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -1503,7 +1571,7 @@ dialog::backdrop {
 .oferta-footer {
     margin-top: var(--space-xl);
     padding-top: var(--space-lg);
-    text-align: center;
+    text-align: right; /* valor por defecto en escritorio, se corrige en móvil abajo */
 }
 
 /* Ajustes específicos para móvil en tarjetas de ofertas */
@@ -1518,6 +1586,19 @@ dialog::backdrop {
     margin-left: 0;
     margin-top: var(--space-xs);
     white-space: normal; /* Permite que la fecha se parta en 2 líneas si es necesario */
+  }
+
+  /* En móvil, centrar el footer y el botón de WhatsApp dentro de la tarjeta de oferta */
+  .oferta-footer {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  .oferta-footer .btn-whatsapp {
+    display: inline-flex;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -1613,6 +1694,128 @@ dialog::backdrop {
   box-shadow: var(--shadow-md);
   border-color: var(--accent-primary);
   background: linear-gradient(to bottom right, rgba(37, 99, 235, 0.06), rgba(34, 197, 94, 0.03));
+}
+
+/* ========== MIS PUBLICACIONES ========== */
+
+#publicacionesContenido {
+  max-width: 880px;
+  margin: var(--space-3xl) auto var(--space-4xl);
+  padding: var(--space-2xl) var(--space-xl);
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.06), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.04), transparent 55%),
+    rgba(15, 23, 42, 0.02);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  box-shadow: var(--shadow-md);
+}
+
+#publicacionesContenido > p {
+  margin-bottom: var(--space-md);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+#publicacionesContenido .actions-row {
+  margin-bottom: var(--space-xl);
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+/* 2 columnas: oficios (izquierda) y ofertas (derecha) */
+.publicaciones-row {
+  display: flex;
+  gap: var(--space-xl);
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.publicaciones-col {
+  flex: 0 1 50%;
+}
+
+.publicaciones-col h2 {
+  font-size: 1.1rem;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.publicaciones-lista {
+  margin-top: var(--space-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.pub-item {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-md);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.06));
+  box-shadow: var(--shadow-sm);
+}
+
+.pub-main {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+  font-weight: 600;
+}
+
+.pub-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.pub-estado {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pub-estado-activa {
+  background: rgba(22, 163, 74, 0.12);
+  color: #047857;
+  border-color: rgba(22, 163, 74, 0.4);
+}
+
+.pub-estado-inactiva {
+  background: rgba(148, 163, 184, 0.18);
+  color: #475569;
+  border-color: rgba(148, 163, 184, 0.55);
+}
+
+@media (max-width: 800px) {
+  #publicacionesContenido {
+    margin-top: var(--space-2xl);
+    padding: var(--space-xl);
+  }
+
+  .publicaciones-row {
+    flex-direction: column;
+    gap: var(--space-2xl);
+  }
+
+  .pub-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #publicacionesContenido .actions-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .landing-card-secondary h2 {

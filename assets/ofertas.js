@@ -60,6 +60,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Carga sencilla sin parámetros extra para evitar errores 400
             todasLasOfertas = await pb.collection(COLLECTION_OFERTAS).getFullList();
 
+            // Ocultar ofertas marcadas como inactivas
+            todasLasOfertas = todasLasOfertas.filter(o => o.estado !== 'inactiva');
+
             // Ordenar de más reciente a más antigua según fecha_publicacion o created
             todasLasOfertas.sort((a, b) => {
                 const fechaA = new Date(a.fecha_publicacion || a.created || 0).getTime();
@@ -228,14 +231,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const currentUser = window.pb?.authStore?.model;
             if (!currentUser) {
-                alert('Debes crear una cuenta e iniciar sesión para publicar ofertas.');
+                const msgNoUser = 'Debes crear una cuenta e iniciar sesión para publicar ofertas.';
+                if (typeof window.showToast === 'function') {
+                    window.showToast(msgNoUser, 'error');
+                } else {
+                    alert(msgNoUser);
+                }
                 window.location.href = 'cuenta.html?mode=login&return=ofertas';
                 return;
             }
 
             const whatsappPerfil = (currentUser.whatsapp || '').replace(/\D/g, '');
             if (!/^\d{9}$/.test(whatsappPerfil)) {
-                alert('El WhatsApp de contacto de tu cuenta no es válido. Configúralo en "Mi perfil" (9 dígitos).');
+                const msgWpInvalido = 'El WhatsApp de contacto de tu cuenta no es válido. Configúralo en "Mi perfil" (9 dígitos).';
+                if (typeof window.showToast === 'function') {
+                    window.showToast(msgWpInvalido, 'error');
+                } else {
+                    alert(msgWpInvalido);
+                }
                 window.location.href = 'perfil.html';
                 return;
             }
@@ -255,7 +268,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await pb.collection(COLLECTION_OFERTAS).create(data);
 
-            alert('¡Oferta publicada con éxito!');
+            const msgOk = '¡Oferta publicada con éxito!';
+            if (typeof window.showToast === 'function') {
+                window.showToast(msgOk, 'success');
+            } else {
+                alert(msgOk);
+            }
+
             frmPublicarOferta.reset();
             dlgPublicar.close();
             unlockScroll();
@@ -264,7 +283,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (error) {
             console.error('Error al publicar la oferta:', error);
-            alert('Hubo un error al publicar la oferta. Por favor, revisa los datos e intenta de nuevo.');
+            const msgErr = 'Hubo un error al publicar la oferta. Por favor, revisa los datos e intenta de nuevo.';
+            if (typeof window.showToast === 'function') {
+                window.showToast(msgErr, 'error');
+            } else {
+                alert(msgErr);
+            }
         } finally {
             btnEnviar.disabled = false;
             btnEnviar.textContent = 'Publicar Oferta';
