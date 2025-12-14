@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b111b" />
+  <title>Empleos en Comunidad</title>
+  <meta name="description" content="Empleos en Comunidad es un catálogo comunitario de oficios y ofertas de trabajo con contacto directo por WhatsApp" />
+  <link rel="manifest" href="assets/manifest.webmanifest" crossorigin="use-credentials" />
+  <link rel="icon" type="image/svg+xml" sizes="192x192" href="icons/icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="512x512" href="icons/icon-512.svg" />
+  <link rel="apple-touch-icon" href="icons/icon-192.svg" />
+  <link rel="stylesheet" href="assets/styles.base.css" />
+  <link rel="stylesheet" href="assets/styles.layout.css" />
+  <link rel="stylesheet" href="assets/styles.components.css" />
+  <link rel="stylesheet" href="assets/styles.css" />
+
+  <!-- PocketBase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
+</head>
+
+<body>
+  <main class="container landing-container">
+    <header class="landing-header">
+      <div class="landing-header-row">
+        <h1>Empleos en Comunidad</h1>
+        <button id="btnHelp" class="help-btn" title="Guía de Usuario">❓</button>
+      </div>
+      <p class="landing-subtitle">
+        Todas las personas tenemos un oficio, profesión o actividad que sabemos desempeñar.
+        Aquí puedes darte a conocer y ofrecer tus servicios a tu comunidad.
+      </p>
+      <p class="landing-subtitle">
+        Empleos en Comunidad conecta a personas que buscan servicios con quienes quieren ofrecer su trabajo dentro de la comunidad.
+      </p>
+    </header>
+
+    <section class="landing-options">
+      <a href="assets/oficios.html" class="landing-card">
+        <div class="landing-card-icon">
+          <span class="landing-icon landing-icon-search">🔎</span>
+        </div>
+        <h2>Busco un trabajador o profesional</h2>
+        <p>
+          Explora el catálogo de oficios, profesiones y actividades, contacta directamente por WhatsApp
+          o registra tu perfil para anunciar tus servicios.
+        </p>
+      </a>
+
+      <a href="assets/ofertas.html" class="landing-card landing-card-secondary">
+        <div class="landing-card-icon">
+          <span class="landing-icon landing-icon-offer">📣</span>
+        </div>
+        <h2>Ofrezco empleo</h2>
+        <p>
+          Publica ofertas de trabajo dirigidas a personas con oficios, profesiones u otras habilidades prácticas
+          que quieran trabajar en tu comunidad.
+        </p>
+      </a>
+    </section>
+
+    <!-- Diálogo de Guía de Usuario -->
+    <dialog id="dlgHelp" class="help-dialog">
+      <div class="help-header">
+        <h2>💼 Guía de Usuario</h2>
+        <button type="button" class="help-close" id="btnCerrarHelp">✕</button>
+      </div>
+      <div id="helpContent" class="help-content"></div>
+    </dialog>
+
+    <!-- Diálogos de Términos y Privacidad -->
+    <dialog id="dlgLicense" class="help-dialog">
+      <div class="help-header">
+        <h2>📄 Términos de Uso</h2>
+        <button type="button" class="help-close" id="btnCerrarLicense">✕</button>
+      </div>
+      <div id="licenseContent" class="help-content"></div>
+    </dialog>
+
+    <dialog id="dlgPrivacy" class="help-dialog">
+      <div class="help-header">
+        <h2>🔒 Política de Privacidad</h2>
+        <button type="button" class="help-close" id="btnCerrarPrivacy">✕</button>
+      </div>
+      <div id="privacyContent" class="help-content"></div>
+    </dialog>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <p>&copy; 2025 GMR - Empleos en Comunidad - Todos los derechos reservados</p>
+
+        <div class="footer-links">
+          <a href="#" id="linkLicense">Términos de Uso</a>
+          <span class="separator">|</span>
+          <a href="#" id="linkPrivacy">Política de Privacidad</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Librería para renderizar Markdown (para los diálogos de términos y privacidad) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="assets/core.ui.js?v=1"></script>
+
+  <script>
+    // Registro del Service Worker para habilitar PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/assets/sw.js')
+          .catch(function (err) {
+            console.error('[PWA] Error registrando service worker:', err);
+          });
+      });
+    }
+  </script>
+
+</body>
+
+</html>

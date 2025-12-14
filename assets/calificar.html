@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7fa" />
+    <title>Calificar Servicio - Experiencia Premium</title>
+    <meta name="description" content="Comparte tu experiencia y ayuda a otros usuarios" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.base.css?v=1" />
+    <link rel="stylesheet" href="styles.layout.css?v=1" />
+    <link rel="stylesheet" href="styles.components.css?v=1" />
+    <link rel="stylesheet" href="styles.css?v=3" />
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-y: auto;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .calificar-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .calificar-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.25rem;
+        }
+
+        .calificar-meta-opcional {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .calificar-meta-count {
+            color: var(--text-muted);
+        }
+
+        .calificar-resultado {
+            display: none;
+        }
+
+        .calificar-resultado-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .calificar-resultado-text {
+            color: var(--text-secondary);
+        }
+
+        .calificar-error {
+            display: none;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .calificar-error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .calificar-error-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .calificar-error-text {
+            color: var(--text-secondary);
+        }
+
+        .calificar-error-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .calificar-footer {
+            text-align: center;
+            margin-top: 1rem;
+            opacity: 0.6;
+        }
+
+        .calificar-footer-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body class="calificar-page">
+    <div class="calificar-container">
+
+        <div class="calificar-card">
+            <!-- Header -->
+            <div class="calificar-header">
+                <h1>Calificar Servicio</h1>
+                <p id="profesionalNombre" class="profesional-nombre">Cargando información...</p>
+            </div>
+
+            <!-- Formulario -->
+            <div id="calificarForm" class="calificar-form">
+                <div class="rating-stars-large">
+                    <span class="star-large interactive" data-value="1" title="Malo">★</span>
+                    <span class="star-large interactive" data-value="2" title="Regular">★</span>
+                    <span class="star-large interactive" data-value="3" title="Bueno">★</span>
+                    <span class="star-large interactive" data-value="4" title="Muy Bueno">★</span>
+                    <span class="star-large interactive" data-value="5" title="Excelente">★</span>
+                </div>
+                <!-- Input oculto para el valor -->
+                <input type="hidden" id="ratingValue" value="0" />
+
+                <label for="comentario" class="calificar-label">
+                    Cuéntanos tu experiencia
+                </label>
+
+                <textarea id="comentario" maxlength="200"
+                    placeholder="¿Qué fue lo que más te gustó? T u opinión es muy valiosa para nosotros..."></textarea>
+
+                <div class="calificar-meta">
+                    <span class="calificar-meta-opcional">Opcional</span>
+                    <small id="charCount" class="calificar-meta-count">0/200</small>
+                </div>
+
+                <button id="btnEnviar" class="btn-submit" disabled>
+                    Enviar Calificación
+                </button>
+            </div>
+
+            <!-- Mensaje de Éxito -->
+            <div id="mensajeResultado" class="success-animation calificar-resultado">
+                <div class="checkmark-circle">
+                    <div class="checkmark">✓</div>
+                </div>
+                <h2 class="calificar-resultado-title">¡Gracias por tu opinión!</h2>
+                <p class="calificar-resultado-text">Tu calificación ha sido registrada exitosamente.</p>
+            </div>
+
+            <!-- Mensaje de Error -->
+            <div id="mensajeError" class="mensaje-estado calificar-error">
+                <div class="calificar-error-icon">⚠️</div>
+                <h2 class="calificar-error-title">Enlace no válido</h2>
+                <p id="errorTexto" class="calificar-error-text">Este enlace ha expirado o ya fue utilizado.</p>
+                <div style="margin-top: 2rem;">
+                    <a href="/" class="calificar-error-link">Volver al inicio</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="calificar-footer">
+            <p class="calificar-footer-text">Protegido por Empleos en Comunidad &copy; 2025</p>
+        </div>
+
+    </div>
+
+    <script src="core.pb.js?v=1"></script>
+    <script src="calificar.js?v=12"></script>
+</body>
+
+</html>

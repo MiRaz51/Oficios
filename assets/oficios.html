@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b111b" />
+  <title>Empleos en Comunidad - Oficios</title>
+  <meta name="description" content="Empleos en Comunidad - Catálogo comunitario de oficios con contacto directo por WhatsApp." />
+  <link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials" />
+  <link rel="icon" type="image/svg+xml" sizes="192x192" href="../icons/icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="512x512" href="../icons/icon-512.svg" />
+  <link rel="apple-touch-icon" href="../icons/icon-192.svg" />
+  <link rel="stylesheet" href="styles.base.css" />
+  <link rel="stylesheet" href="styles.layout.css" />
+  <link rel="stylesheet" href="styles.components.css" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- PocketBase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
+</head>
+
+<body>
+  <main class="container">
+    <a href="/" class="back-link">← Volver al inicio</a>
+    <h1><a href="/" class="page-title-link">Empleos en Comunidad</a></h1>
+
+    <section class="toolbar">
+      <input id="q" placeholder="Buscar por nombre u oficio" />
+      <select id="selOficio">
+        <option value="">Todos los oficios</option>
+      </select>
+      <select id="selUbicacion">
+        <option value="">Todas las ubicaciones</option>
+      </select>
+      <button id="btnReset" class="secondary">Limpiar</button>
+
+      <button id="btnSoyProfesional" class="primary">Tengo un oficio</button>
+
+      <div id="userMenu" class="user-menu">
+        <button id="btnUserMenu" type="button" class="user-menu-button" aria-label="Menú de usuario">
+          <span id="userMenuIcon" class="user-menu-icon">⏻</span>
+        </button>
+        <div id="userMenuDropdown" class="user-menu-dropdown">
+          <button type="button" id="btnLoginCuenta">Iniciar sesión</button>
+          <button type="button" id="btnRegistroCuenta">Crear cuenta</button>
+          <button type="button" id="btnMiPerfil">Mi perfil</button>
+          <button type="button" id="btnCambiarVista">Ver ofertas</button>
+          <button type="button" id="btnLogout">Cerrar sesión</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats-container">
+      <div id="filtrosAplicados" class="filtros-aplicados"></div>
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-label">Total de oficios publicados:</span>
+          <span class="stat-value" id="statTotal">0</span>
+        </div>
+        <div class="stat-item hidden">
+          <span class="stat-label">Contactos registrados:</span>
+          <span class="stat-value stat-prestado" id="statPrestados">0</span>
+        </div>
+      </div>
+    </div>
+
+    <section id="tabla" class="card"></section>
+
+    <!-- Modal de Perfil de Oficio -->
+    <dialog id="dlg">
+      <form method="dialog" id="frmPerfil">
+        <div class="dialog-header">
+          <h3 id="dlgTitle">Perfil de oficio</h3>
+          <div id="perfilFechaPublicacion" class="perfil-fecha-publicacion"></div>
+        </div>
+        <div id="mensajeCargaMovil" class="mensaje-carga-movil"></div>
+        <div class="dialog-container perfil-container">
+          <div class="perfil-main">
+            <div class="perfil-header">
+              <div id="perfilFoto" class="perfil-foto"></div>
+              <div class="perfil-info">
+                <h2 id="perfilNombre"></h2>
+                <p class="perfil-oficio" id="perfilOficio"></p>
+                <div class="perfil-rating" id="perfilRating"></div>
+                <div id="perfilBadge" class="perfil-badge"></div>
+              </div>
+            </div>
+
+            <div class="perfil-section">
+              <h4>📍 Ubicación y Modalidad</h4>
+              <div class="perfil-grid">
+                <div>
+                  <strong>Ubicación:</strong> <span id="perfilUbicacion"></span>
+                </div>
+                <div>
+                  <strong>Modalidad:</strong> <span id="perfilModalidad"></span>
+                </div>
+                <div>
+                  <strong>Contactos:</strong> <span id="perfilContactos"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="perfil-section">
+              <h4>💼 Experiencia</h4>
+              <p id="perfilExperiencia"></p>
+            </div>
+
+            <div class="perfil-section">
+              <h4>🛠️ Habilidades</h4>
+              <div id="perfilHabilidades" class="habilidades-list"></div>
+            </div>
+
+            <div class="perfil-section">
+              <h4>🔗 Portafolio</h4>
+              <div id="perfilPortafolio"></div>
+            </div>
+
+            <div class="perfil-section">
+              <h4>⭐ Calificaciones Recientes</h4>
+              <div id="calificacionesRecientes"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-footer perfil-footer">
+          <div class="dialog-footer-row">
+            <button type="button" id="btnContactarWhatsApp" class="btn-whatsapp" style="margin-right: 10px;">
+              📱 Contactar por WhatsApp
+            </button>
+            <button type="button" id="btnCalificar" class="secondary" style="display: none;">
+              ⭐ Calificar Servicio
+            </button>
+            <div class="dialog-nav">
+              <button type="button" id="btnAnterior" class="secondary">← Atrás</button>
+              <button type="button" id="btnSiguiente" class="secondary">Siguiente →</button>
+              <button type="button" value="cancel" id="btnCerrarDialog" class="btn-cerrar-footer">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Modal de Calificación -->
+    <dialog id="dlgCalificar">
+      <form method="dialog" id="frmCalificar">
+        <h3>⭐ Calificar Servicio</h3>
+        <p>¿Cómo fue tu experiencia con este oficio / trabajador?</p>
+
+        <div class="rating-input">
+          <span class="star interactive" data-value="1">☆</span>
+          <span class="star interactive" data-value="2">☆</span>
+          <span class="star interactive" data-value="3">☆</span>
+          <span class="star interactive" data-value="4">☆</span>
+          <span class="star interactive" data-value="5">☆</span>
+        </div>
+        <input type="hidden" id="ratingValue" value="0" />
+
+        <label>
+          Comentario (opcional)
+          <textarea id="comentarioCalificacion" placeholder="Cuéntanos sobre tu experiencia..." maxlength="500"
+            rows="4"></textarea>
+        </label>
+
+        <div class="dialog-footer">
+          <button type="button" id="btnEnviarCalificacion" class="primary">Enviar Calificación</button>
+          <button type="button" id="btnCerrarCalificar" class="secondary">Cancelar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Modal de Registro de Oficio -->
+    <dialog id="dlgRegistro">
+      <form method="dialog" id="frmRegistro">
+        <div class="dialog-header">
+          <h3>🚀 Registro de Oficio</h3>
+        </div>
+
+        <div class="dialog-container">
+          <p class="form-intro">Únete a nuestro catálogo y recibe ofertas de trabajo directamente en tu WhatsApp.</p>
+
+          <div class="form-group" style="display: none;">
+            <label for="regNombre">Nombre Completo *</label>
+            <input type="text" id="regNombre" required minlength="3" placeholder="Tu nombre y apellidos" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="regOficio">Oficio / Profesión *</label>
+            <select id="regOficio" required>
+              <option value="">Selecciona un oficio...</option>
+              <optgroup label="Construcción y Mantenimiento">
+                <option value="Fontanero">Fontanero</option>
+                <option value="Electricista">Electricista</option>
+                <option value="Pintor">Pintor</option>
+                <option value="Albañil">Albañil</option>
+                <option value="Carpintero">Carpintero</option>
+                <option value="Cerrajero">Cerrajero</option>
+              </optgroup>
+              <optgroup label="Hogar y Limpieza">
+                <option value="Limpieza del Hogar">Limpieza del Hogar</option>
+                <option value="Jardinero">Jardinero</option>
+                <option value="Cuidador/a de Personas Mayores">Cuidador/a de Personas Mayores</option>
+                <option value="Cuidador/a de Niños">Cuidador/a de Niños</option>
+              </optgroup>
+              <optgroup label="Reparaciones">
+                <option value="Técnico de Electrodomésticos">Técnico de Electrodomésticos</option>
+                <option value="Técnico de Aire Acondicionado">Técnico de Aire Acondicionado</option>
+                <option value="Mecánico de Automóviles">Mecánico de Automóviles</option>
+                <option value="Reparación de Ordenadores">Reparación de Ordenadores</option>
+              </optgroup>
+              <optgroup label="Servicios Especializados">
+                <option value="Profesor Particular">Profesor Particular</option>
+                <option value="Diseñador Gráfico">Diseñador Gráfico</option>
+                <option value="Fotógrafo">Fotógrafo</option>
+                <option value="Traductor">Traductor</option>
+              </optgroup>
+              <optgroup label="Otros Servicios">
+                <option value="Mudanzas">Mudanzas</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Peluquero/a">Peluquero/a</option>
+                <option value="Otros">Otros</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group" id="regOficioOtroContainer" style="display: none;">
+            <label for="regOficioOtro">Especifica tu oficio *</label>
+            <input type="text" id="regOficioOtro" placeholder="Ej: Masajista, Veterinario...">
+            <small>Describe tu oficio o profesión</small>
+          </div>
+
+          <div class="form-group">
+            <label for="regUbicacion">Ubicación *</label>
+            <input type="text" id="regUbicacion" required placeholder="Ciudad o Zona donde trabajas">
+          </div>
+
+          <div class="form-group">
+            <label for="regWhatsapp">WhatsApp de Contacto *</label>
+            <input type="tel" id="regWhatsapp" required pattern="[0-9]{9,15}"
+              placeholder="Solo números (ej: 612345678)" readonly>
+            <small>Los clientes te contactarán a este número. Se toma de tu cuenta.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="regModalidad">Modalidad de Trabajo *</label>
+            <select id="regModalidad" required>
+              <option value="presencial">Presencial</option>
+              <option value="remoto">Remoto</option>
+              <option value="hibrido">Híbrido (Ambos)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="regPortafolio">Portafolio (opcional)</label>
+            <input type="url" id="regPortafolio" placeholder="Ej: https://miportafolio.com/proyectos">
+            <small>Enlace a tu web, LinkedIn, Behance, GitHub o similar. Debe empezar por http:// o https://</small>
+          </div>
+
+          <div class="form-group">
+            <label for="regHabilidades">Habilidades Principales *</label>
+            <input type="text" id="regHabilidades" required
+              placeholder="Ej: Reparaciones, Instalaciones, Urgencias 24h">
+            <small>Separa las habilidades con comas.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="regExperiencia">Experiencia / Sobre ti *</label>
+            <textarea id="regExperiencia" rows="3" required
+              placeholder="Cuéntanos brevemente tu experiencia y qué servicios ofreces..."></textarea>
+          </div>
+        </div>
+
+        <div class="dialog-footer">
+          <button type="submit" id="btnEnviarRegistro" class="primary">Enviar Solicitud</button>
+          <button type="button" id="btnCancelarRegistro" class="secondary">Cancelar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Diálogos de Ayuda -->
+    <dialog id="dlgHelp" class="help-dialog">
+      <div class="help-header">
+        <h2>💼 Guía de Usuario</h2>
+        <button type="button" class="help-close" id="btnCerrarHelp">✕</button>
+      </div>
+      <div id="helpContent" class="help-content"></div>
+    </dialog>
+
+    <dialog id="dlgLicense" class="help-dialog">
+      <div class="help-header">
+        <h2>📄 Términos de Uso</h2>
+        <button type="button" class="help-close" id="btnCerrarLicense">✕</button>
+      </div>
+      <div id="licenseContent" class="help-content"></div>
+    </dialog>
+
+    <dialog id="dlgPrivacy" class="help-dialog">
+      <div class="help-header">
+        <h2>🔒 Política de Privacidad</h2>
+        <button type="button" class="help-close" id="btnCerrarPrivacy">✕</button>
+      </div>
+      <div id="privacyContent" class="help-content"></div>
+    </dialog>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <p>&copy; 2025 GMR - Empleos en Comunidad - Todos los derechos reservados</p>
+        <div class="footer-links">
+          <a href="#" id="linkLicense">Términos de Uso</a>
+          <span class="separator">|</span>
+          <a href="#" id="linkPrivacy">Política de Privacidad</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Librería para búsqueda difusa (Fuzzy Search) -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <!-- Librería para renderizar Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="core.pb.js?v=1"></script>
+  <script src="usuario.js?v=1"></script>
+  <script src="core.ui.js?v=1"></script>
+  <script src="app.js?v=4"></script>
+</body>
+
+</html>

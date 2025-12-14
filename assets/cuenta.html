@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b111b" />
+  <title>Crear cuenta - Empleos en Comunidad</title>
+  <link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials" />
+  <link rel="icon" type="image/svg+xml" sizes="192x192" href="../icons/icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="512x512" href="../icons/icon-512.svg" />
+  <link rel="apple-touch-icon" href="../icons/icon-192.svg" />
+  <link rel="stylesheet" href="styles.base.css" />
+  <link rel="stylesheet" href="styles.layout.css" />
+  <link rel="stylesheet" href="styles.components.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
+</head>
+<body>
+  <main class="container">
+    <a href="/" class="back-link">← Volver al inicio</a>
+    <h1><a href="/" class="page-title-link">Empleos en Comunidad</a></h1>
+
+    <section class="card account-card">
+      <p class="form-intro" id="textoRegistro">Crea una cuenta única para gestionar tus perfiles de oficio y tus ofertas de empleo.</p>
+      <p class="form-intro" id="textoLogin" style="display:none;">Inicia sesión con tu cuenta existente para gestionar tus perfiles y ofertas.</p>
+
+      <!-- Formulario de registro -->
+      <form id="frmCuentaRegistro" class="form-vertical">
+        <div class="form-group">
+          <label for="cuentaNombre">Nombre completo *</label>
+          <input type="text" id="cuentaNombre" required minlength="3" placeholder="Tu nombre y apellidos" />
+        </div>
+
+        <div class="form-group">
+          <label for="cuentaWhatsapp">WhatsApp de contacto *</label>
+          <input type="tel" id="cuentaWhatsapp" required pattern="[0-9]{9}" placeholder="Solo números (9 dígitos, ej: 612345678)" />
+          <small>Introduce un número con exactamente 9 dígitos. Lo usaremos como dato principal de contacto en tus perfiles y ofertas.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="cuentaEmail">Correo electrónico *</label>
+          <input type="email" id="cuentaEmail" required placeholder="tucorreo@ejemplo.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="cuentaPassword">Contraseña *</label>
+          <input type="password" id="cuentaPassword" required minlength="6" />
+          <small id="cuentaPasswordError" class="field-error"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="cuentaPasswordConfirm">Confirmar contraseña *</label>
+          <input type="password" id="cuentaPasswordConfirm" required minlength="6" />
+        </div>
+
+        <div class="dialog-footer">
+          <button type="submit" id="btnCrearCuenta" class="primary">Crear cuenta y continuar</button>
+          <button type="button" id="btnCancelarCuenta" class="secondary">Cancelar</button>
+        </div>
+      </form>
+
+      <!-- Formulario de login -->
+      <form id="frmCuentaLogin" class="form-vertical" style="display:none;">
+        <div class="form-group">
+          <label for="loginEmail">Correo electrónico *</label>
+          <input type="email" id="loginEmail" required placeholder="tucorreo@ejemplo.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Contraseña *</label>
+          <input type="password" id="loginPassword" required minlength="6" />
+        </div>
+
+        <div class="dialog-footer">
+          <button type="submit" id="btnLogin" class="primary">Iniciar sesión</button>
+          <button type="button" id="btnCancelarLogin" class="secondary">Cancelar</button>
+        </div>
+        <p class="text-center" style="margin-top: 0.75rem; font-size: 0.9rem;">
+          <button type="button" id="btnOlvidoPassword" class="link-button">¿Has olvidado tu contraseña?</button>
+        </p>
+        <p class="text-center" style="margin-top: 0.5rem; font-size: 0.9rem;">
+          <button type="button" id="btnIrRegistroDesdeLogin" class="link-button">¿No tienes cuenta? Crear una nueva</button>
+        </p>
+      </form>
+
+      <p id="cuentaMensaje" class="status-message"></p>
+      <button type="button" id="btnIrLoginDesdeError" class="primary" style="display:none; margin: 0.75rem auto 1.5rem;">
+        Iniciar sesión
+      </button>
+    </section>
+
+    <!-- Diálogos de Términos y Privacidad -->
+    <dialog id="dlgLicense" class="help-dialog">
+      <div class="help-header">
+        <h2>📄 Términos de Uso</h2>
+        <button type="button" class="help-close" id="btnCerrarLicense">✕</button>
+      </div>
+      <div id="licenseContent" class="help-content"></div>
+    </dialog>
+
+    <dialog id="dlgPrivacy" class="help-dialog">
+      <div class="help-header">
+        <h2>🔒 Política de Privacidad</h2>
+        <button type="button" class="help-close" id="btnCerrarPrivacy">✕</button>
+      </div>
+      <div id="privacyContent" class="help-content"></div>
+    </dialog>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <p>&copy; 2025 GMR - Empleos en Comunidad - Todos los derechos reservados</p>
+        <div class="footer-links">
+          <a href="#" id="linkLicense">Términos de Uso</a>
+          <span class="separator">|</span>
+          <a href="#" id="linkPrivacy">Política de Privacidad</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="core.pb.js?v=1"></script>
+  <script src="core.ui.js?v=1"></script>
+  <script src="cuenta.js?v=1"></script>
+</body>
+</html>

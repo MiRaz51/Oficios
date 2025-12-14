@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b111b" />
+  <title>Mi perfil - Empleos en Comunidad</title>
+  <link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials" />
+  <link rel="icon" type="image/svg+xml" sizes="192x192" href="../icons/icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="512x512" href="../icons/icon-512.svg" />
+  <link rel="apple-touch-icon" href="../icons/icon-192.svg" />
+  <link rel="stylesheet" href="styles.base.css" />
+  <link rel="stylesheet" href="styles.layout.css" />
+  <link rel="stylesheet" href="styles.components.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
+</head>
+<body>
+  <main class="container">
+    <a href="/" class="back-link">← Volver al inicio</a>
+    <h1><a href="/" class="page-title-link">Mi perfil</a></h1>
+
+    <section id="perfilNoSesion" class="account-card" style="display:none;">
+      <p class="form-intro">Para ver y editar tu perfil, primero necesitas iniciar sesión o crear una cuenta.</p>
+      <button type="button" id="btnIrCuentaDesdePerfil" class="primary">Iniciar / Crear cuenta</button>
+    </section>
+
+    <section id="perfilContenido" class="account-card" style="display:none;">
+      <p class="form-intro">Consulta y actualiza los datos básicos de tu cuenta.</p>
+      <h2>Datos de tu cuenta</h2>
+      <form id="frmPerfilCuenta" class="form-vertical">
+        <div class="form-group">
+          <label for="perfilEmail">Correo electrónico</label>
+          <input type="email" id="perfilEmail" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Estado de verificación</label>
+          <input type="text" id="perfilEstado" readonly />
+        </div>
+
+        <div class="form-group">
+          <label for="perfilNombre">Nombre completo</label>
+          <input type="text" id="perfilNombre" minlength="3" />
+        </div>
+
+        <div class="form-group">
+          <label for="perfilWhatsapp">WhatsApp</label>
+          <input type="tel" id="perfilWhatsapp" pattern="[0-9]{9}" />
+          <small>Solo números, exactamente 9 dígitos.</small>
+        </div>
+
+        <div class="dialog-footer">
+          <button type="submit" class="primary">Guardar cambios</button>
+          <button type="button" id="btnEliminarCuenta" class="secondary">Eliminar cuenta</button>
+          <button type="button" id="btnLogoutPerfil" class="secondary">Cerrar sesión</button>
+        </div>
+      </form>
+      <p id="perfilMensaje" class="status-message"></p>
+    </section>
+
+    <!-- Modal de confirmación fuerte para eliminar cuenta -->
+    <dialog id="dlgConfirmDelete" class="help-dialog">
+      <div class="help-header">
+        <h2>Eliminar cuenta y publicaciones</h2>
+        <button type="button" class="help-close" id="btnCerrarConfirmDelete">✕</button>
+      </div>
+      <div class="help-content">
+        <p>Esta acción eliminará tu cuenta de forma permanente y tambien todas tus publicaciones (oficios y ofertas). Ya no se podrá deshacer.</p>
+        <p>¿Estás completamente seguro de que deseas continuar?</p>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="secondary" id="btnCancelarConfirmDelete">Cancelar</button>
+        <button type="button" class="primary" id="btnConfirmarDeleteDefinitivo">Eliminar definitivamente</button>
+      </div>
+    </dialog>
+
+    <!-- Diálogos de Términos y Privacidad -->
+    <dialog id="dlgLicense" class="help-dialog">
+      <div class="help-header">
+        <h2>📄 Términos de Uso</h2>
+        <button type="button" class="help-close" id="btnCerrarLicense">✕</button>
+      </div>
+      <div id="licenseContent" class="help-content"></div>
+    </dialog>
+
+    <dialog id="dlgPrivacy" class="help-dialog">
+      <div class="help-header">
+        <h2>🔒 Política de Privacidad</h2>
+        <button type="button" class="help-close" id="btnCerrarPrivacy">✕</button>
+      </div>
+      <div id="privacyContent" class="help-content"></div>
+    </dialog>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <p>&copy; 2025 GMR - Empleos en Comunidad - Todos los derechos reservados</p>
+        <div class="footer-links">
+          <a href="#" id="linkLicense">Términos de Uso</a>
+          <span class="separator">|</span>
+          <a href="#" id="linkPrivacy">Política de Privacidad</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="core.pb.js?v=1"></script>
+  <script src="usuario.js?v=1"></script>
+  <script src="core.ui.js?v=1"></script>
+  <script src="perfil.js?v=1"></script>
+</body>
+</html>
