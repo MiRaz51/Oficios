@@ -46,9 +46,11 @@ h1::after {
 
 /* Toolbar superior */
 .toolbar {
-  display: grid;
-  grid-template-columns: 2fr repeat(2, 1fr) auto auto auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-md);
+  width: 100%;
   margin-bottom: var(--space-2xl);
   padding: var(--space-xl);
   background: var(--gradient-card);
@@ -57,6 +59,117 @@ h1::after {
   box-shadow: var(--shadow-lg);
   position: relative;
   overflow: visible;
+}
+
+@media (min-width: 900px) {
+  .toolbar--oficios {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.toolbar--ofertas {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.toolbar-row {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.toolbar-row-top input {
+  flex: 1 1 420px;
+  min-width: 240px;
+}
+
+.toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-left: auto;
+}
+
+.toolbar-row-top .user-menu-button {
+  width: 200px;
+}
+
+.toolbar-row-bottom button.primary {
+  width: 200px;
+}
+
+.toolbar-row-bottom select {
+  flex: 0 1 210px;
+  min-width: 180px;
+}
+
+.toolbar-row-bottom button {
+  flex: 0 0 auto;
+}
+
+.toolbar-row-bottom button.primary {
+  margin-left: auto;
+}
+
+.toolbar input {
+  flex: 1 1 320px;
+  min-width: 220px;
+}
+
+.toolbar select {
+  flex: 0 1 210px;
+  min-width: 180px;
+}
+
+.toolbar button {
+  flex: 0 0 auto;
+}
+
+.toolbar .user-menu {
+  flex: 0 0 auto;
+  margin-left: 0;
+}
+
+@media (max-width: 980px) {
+  .toolbar-actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .toolbar-row-top input {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .toolbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .toolbar-row-top .user-menu-button {
+    width: 100%;
+  }
+
+  .toolbar input,
+  .toolbar select {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .toolbar button.primary {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
 .toolbar::before {

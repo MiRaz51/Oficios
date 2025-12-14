@@ -22,7 +22,7 @@
 
     <section class="card account-card">
       <p class="form-intro" id="textoRegistro">Crea una cuenta única para gestionar tus perfiles de oficio y tus ofertas de empleo.</p>
-      <p class="form-intro" id="textoLogin" style="display:none;">Inicia sesión con tu cuenta existente para gestionar tus perfiles y ofertas.</p>
+      <p class="form-intro is-hidden" id="textoLogin">Inicia sesión con tu cuenta existente para gestionar tus perfiles y ofertas.</p>
 
       <!-- Formulario de registro -->
       <form id="frmCuentaRegistro" class="form-vertical">
@@ -60,7 +60,7 @@
       </form>
 
       <!-- Formulario de login -->
-      <form id="frmCuentaLogin" class="form-vertical" style="display:none;">
+      <form id="frmCuentaLogin" class="form-vertical is-hidden">
         <div class="form-group">
           <label for="loginEmail">Correo electrónico *</label>
           <input type="email" id="loginEmail" required placeholder="tucorreo@ejemplo.com" />
@@ -75,18 +75,15 @@
           <button type="submit" id="btnLogin" class="primary">Iniciar sesión</button>
           <button type="button" id="btnCancelarLogin" class="secondary">Cancelar</button>
         </div>
-        <p class="text-center" style="margin-top: 0.75rem; font-size: 0.9rem;">
+        <p class="text-center cuenta-links-top">
           <button type="button" id="btnOlvidoPassword" class="link-button">¿Has olvidado tu contraseña?</button>
         </p>
-        <p class="text-center" style="margin-top: 0.5rem; font-size: 0.9rem;">
+        <p class="text-center cuenta-links-bottom">
           <button type="button" id="btnIrRegistroDesdeLogin" class="link-button">¿No tienes cuenta? Crear una nueva</button>
         </p>
       </form>
 
       <p id="cuentaMensaje" class="status-message"></p>
-      <button type="button" id="btnIrLoginDesdeError" class="primary" style="display:none; margin: 0.75rem auto 1.5rem;">
-        Iniciar sesión
-      </button>
     </section>
 
     <!-- Diálogos de Términos y Privacidad -->

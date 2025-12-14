@@ -91,24 +91,6 @@ function toTitleCase(str) {
         .join(' ');
 }
 
-function formatFechaCorta(isoString) {
-    if (!isoString) return '';
-    try {
-        const d = new Date(isoString);
-        if (isNaN(d.getTime())) throw new Error('Invalid date');
-
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
-
-        return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
-    } catch {
-        return String(isoString).split('.')[0].slice(0, 16).replace('T', ' ');
-    }
-}
-
 function actualizarIndicadorSesion() {
     try {
         const el = document.getElementById('sessionStatus');
@@ -924,8 +906,6 @@ async function uiContactarWhatsApp(arg) {
     if (!profesionalId || !perfil) return;
 
     try {
-        mostrarMensajeCarga('Registrando contacto...', 'Abriendo WhatsApp');
-
         // 1) Comprobar si ya existe un match pendiente reciente para este profesional
         const yaTieneMatchPendiente = await tieneMatchPendiente(profesionalId);
 
@@ -1351,7 +1331,7 @@ function renderDetallePerfil(data) {
     $('#dlgTitle').textContent = data.nombre || 'Perfil Profesional';
 
     // Fecha de publicación (usar created por defecto)
-    const fechaTexto = formatFechaCorta(data.created || data.updated || '');
+    const fechaTexto = window.formatFechaCorta(data.created || data.updated || '');
     const fechaEl = $('#perfilFechaPublicacion');
     if (fechaEl) {
         fechaEl.textContent = fechaTexto ? `Publicado: ${fechaTexto}` : '';

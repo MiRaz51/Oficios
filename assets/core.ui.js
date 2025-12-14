@@ -14,6 +14,24 @@ window.esc = function (v) {
     .replace(/'/g, '&#39;');
 };
 
+ window.formatFechaCorta = function (isoString) {
+   if (!isoString) return '';
+   try {
+     var d = new Date(isoString);
+     if (isNaN(d.getTime())) throw new Error('Invalid date');
+
+     var yyyy = d.getFullYear();
+     var mm = String(d.getMonth() + 1).padStart(2, '0');
+     var dd = String(d.getDate()).padStart(2, '0');
+     var hh = String(d.getHours()).padStart(2, '0');
+     var min = String(d.getMinutes()).padStart(2, '0');
+
+     return yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + min;
+   } catch (_) {
+     return String(isoString).split('.')[0].slice(0, 16).replace('T', ' ');
+   }
+ };
+
 // Configuración y helpers para mostrar Markdown en diálogos (términos y privacidad)
 function setupMarkdownDialog(options) {
   const link = document.getElementById(options.linkId);

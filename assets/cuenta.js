@@ -9,7 +9,6 @@
   const tabLogin = document.getElementById('tabLogin');
   const mensaje = document.getElementById('cuentaMensaje');
   const passwordError = document.getElementById('cuentaPasswordError');
-  const btnIrLoginDesdeError = document.getElementById('btnIrLoginDesdeError');
   const btnOlvidoPassword = document.getElementById('btnOlvidoPassword');
   const btnIrRegistroDesdeLogin = document.getElementById('btnIrRegistroDesdeLogin');
 
@@ -33,64 +32,6 @@
           reject(e);
         });
     });
-  }
-
-  function prewarmPocketBase() {
-    try {
-      const base = window.POCKETBASE_URL;
-      if (!base || typeof base !== 'string') return;
-      fetch(base.replace(/\/+$/, '') + '/api/health', { cache: 'no-store' }).catch(() => { });
-    } catch (_) {
-    }
-  }
-
-  let __pbHealthMs = null;
-  let __pbDbReadMs = null;
-
-  async function medirSaludPocketBase() {
-    try {
-      const base = window.POCKETBASE_URL;
-      if (!base || typeof base !== 'string') return null;
-      const url = base.replace(/\/+$/, '') + '/api/health';
-      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-      await fetch(url, { cache: 'no-store' });
-      const t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-      __pbHealthMs = Math.max(0, t1 - t0);
-      return __pbHealthMs;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async function medirLecturaDbPocketBase() {
-    try {
-      const base = window.POCKETBASE_URL;
-      if (!base || typeof base !== 'string') return null;
-
-      const baseUrl = base.replace(/\/+$/, '');
-      const candidates = [
-        baseUrl + '/api/collections/oficios/records?page=1&perPage=1&skipTotal=1',
-        baseUrl + '/api/collections/ofertas/records?page=1&perPage=1&skipTotal=1',
-      ];
-
-      for (const url of candidates) {
-        const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-        const res = await fetch(url, { cache: 'no-store' });
-        const t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-        const ms = Math.max(0, t1 - t0);
-
-        // Si devuelve 200 asumimos que es una lectura real a DB.
-        // Si no es 200, igual nos sirve como señal de latencia, pero intentamos otro endpoint.
-        if (res && res.ok) {
-          __pbDbReadMs = ms;
-          return __pbDbReadMs;
-        }
-      }
-
-      return __pbDbReadMs;
-    } catch (_) {
-      return null;
-    }
   }
 
   function setMensaje(texto, tipo = 'info') {
@@ -134,7 +75,6 @@
     if (txtReg) txtReg.style.display = '';
     if (txtLog) txtLog.style.display = 'none';
     setMensaje('', 'info');
-    if (btnIrLoginDesdeError) btnIrLoginDesdeError.style.display = 'none';
   }
 
   function setModeLogin() {
@@ -151,10 +91,6 @@
 
   tabRegistro?.addEventListener('click', setModeRegistro);
   tabLogin?.addEventListener('click', setModeLogin);
-
-  prewarmPocketBase();
-  medirSaludPocketBase();
-  medirLecturaDbPocketBase();
 
   // Botón dentro del formulario de login para ir a crear cuenta
   if (btnIrRegistroDesdeLogin) {
@@ -173,26 +109,6 @@
   btnCancelarLogin?.addEventListener('click', () => {
     window.location.href = returnTo;
   });
-
-  // Botón auxiliar que aparece cuando el correo ya existe
-  if (btnIrLoginDesdeError) {
-    btnIrLoginDesdeError.addEventListener('click', () => {
-      const emailRegistro = document.getElementById('cuentaEmail')?.value.trim();
-      setModeLogin();
-      if (emailRegistro) {
-        const loginEmailInput = document.getElementById('loginEmail');
-        if (loginEmailInput) loginEmailInput.value = emailRegistro;
-      }
-
-      // Asegurar que el formulario de login quede visible
-      try {
-        formLogin?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } catch (_) {}
-
-      // Ocultar el botón en la vista de login
-      btnIrLoginDesdeError.style.display = 'none';
-    });
-  }
 
   // Flujo de "¿Has olvidado tu contraseña?"
   if (btnOlvidoPassword) {
@@ -286,8 +202,7 @@
               handled = true;
             } else if (fieldName === 'email') {
               // Correo ya registrado: mostrar mensaje y ofrecer botón para ir a Iniciar sesión
-              setMensaje('Ya existe una cuenta con ese correo. Usa el formulario de Iniciar sesión.', 'error');
-              if (btnIrLoginDesdeError) btnIrLoginDesdeError.style.display = 'inline-block';
+              setMensaje('Ya existe una cuenta con ese correo. Cambia a la pestaña de Iniciar sesión para entrar.', 'error');
               handled = true;
             } else if (fieldName === 'whatsapp' || fieldName.includes('whatsapp')) {
               setMensaje('Ya existe una cuenta utilizando ese número de WhatsApp. Usa Iniciar sesión o cambia el número.', 'error');
@@ -349,9 +264,7 @@
     setMensaje('Iniciando sesión...', 'info');
 
     try {
-      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
       const authData = await withTimeout(pb.collection('users').authWithPassword(email, password), 30000);
-      const t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
       const user = authData?.record;
 
       if (!user) {
@@ -363,14 +276,8 @@
         return;
       }
 
-      const elapsedMs = Math.max(0, t1 - t0);
-      const elapsedStr = (elapsedMs / 1000).toFixed(1);
-      const healthStr = (__pbHealthMs != null) ? ` | ping ${(Math.max(0, __pbHealthMs) / 1000).toFixed(1)}s` : '';
-      const dbStr = (__pbDbReadMs != null) ? ` | db ${(Math.max(0, __pbDbReadMs) / 1000).toFixed(1)}s` : '';
-      setMensaje(`Sesión iniciada correctamente (${elapsedStr}s${healthStr}${dbStr}). Redirigiendo...`, 'success');
-      setTimeout(() => {
-        window.location.href = returnTo;
-      }, 800);
+      setMensaje('Sesión iniciada correctamente. Redirigiendo...', 'success');
+      window.location.href = returnTo;
 
     } catch (err) {
       console.error('[Cuenta] Error iniciando sesión:', err);

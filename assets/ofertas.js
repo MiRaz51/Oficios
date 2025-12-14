@@ -20,25 +20,6 @@ function actualizarIndicadorSesionOfertas() {
 
 let todasLasOfertas = [];
 
-function formatFechaCorta(isoString) {
-    if (!isoString) return '';
-    try {
-        const d = new Date(isoString);
-        if (isNaN(d.getTime())) throw new Error('Invalid date');
-
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
-
-        return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
-    } catch {
-        // Fallback básico: recortar la parte de segundos y milisegundos en una ISO string
-        return String(isoString).split('.')[0].slice(0, 16).replace('T', ' ');
-    }
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
     // Elementos del DOM
     const ofertasLista = document.getElementById('ofertas-lista');
@@ -129,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ofertasLista.innerHTML = ofertas.map(oferta => {
             // Mostrar siempre algún valor de fecha formateado sin segundos
             const fechaBruta = oferta.fecha_publicacion || oferta.created || '';
-            const fechaTexto = formatFechaCorta(fechaBruta);
+            const fechaTexto = window.formatFechaCorta(fechaBruta);
 
             const descripcionHtml = (oferta.descripcion || '').replace(/\n/g, '<br>');
             const nombreContacto = oferta.nombre_contacto || '';

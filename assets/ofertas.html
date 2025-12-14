@@ -28,30 +28,36 @@
       <p class="page-subtitle">Encuentra oportunidades de trabajo publicadas en la comunidad.</p>
     </header>
 
-    <section class="toolbar">
-      <input id="q-ofertas" placeholder="Buscar por título o palabra clave" />
-      <select id="sel-ubicacion-ofertas">
-        <option value="">Todas las ubicaciones</option>
-      </select>
-      <select id="sel-modalidad-ofertas">
-        <option value="">Todas las modalidades</option>
-      </select>
-      <button id="btn-reset-ofertas" class="secondary">Limpiar</button>
+    <section class="toolbar toolbar--ofertas">
+      <div class="toolbar-row toolbar-row-top">
+        <input id="q-ofertas" placeholder="Buscar por título o palabra clave" />
 
-      <button id="btn-publicar-oferta" class="primary">📣 Publicar Oferta</button>
-
-      <div id="userMenu" class="user-menu">
-        <button id="btnUserMenu" type="button" class="user-menu-button" aria-label="Menú de usuario">
-          <span id="userMenuIcon" class="user-menu-icon">Menú ⋮</span>
-        </button>
-        <div id="userMenuDropdown" class="user-menu-dropdown">
-          <button type="button" id="btnLoginCuenta">Iniciar sesión</button>
-          <button type="button" id="btnRegistroCuenta">Crear cuenta</button>
-          <button type="button" id="btnMiPerfil">Mi perfil</button>
-          <button type="button" id="btnMisPublicaciones">Mis publicaciones</button>
-          <button type="button" id="btnCambiarVista">Ver oficios</button>
-          <button type="button" id="btnLogout">Cerrar sesión</button>
+        <div class="toolbar-actions">
+          <div id="userMenu" class="user-menu">
+            <button id="btnUserMenu" type="button" class="user-menu-button" aria-label="Menú de usuario">
+              <span id="userMenuIcon" class="user-menu-icon">Menú ⋮</span>
+            </button>
+            <div id="userMenuDropdown" class="user-menu-dropdown">
+              <button type="button" id="btnLoginCuenta">Iniciar sesión</button>
+              <button type="button" id="btnRegistroCuenta">Crear cuenta</button>
+              <button type="button" id="btnMiPerfil">Mi perfil</button>
+              <button type="button" id="btnMisPublicaciones">Mis publicaciones</button>
+              <button type="button" id="btnCambiarVista">Ver oficios</button>
+              <button type="button" id="btnLogout">Cerrar sesión</button>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="toolbar-row toolbar-row-bottom">
+        <select id="sel-ubicacion-ofertas">
+          <option value="">Todas las ubicaciones</option>
+        </select>
+        <select id="sel-modalidad-ofertas">
+          <option value="">Todas las modalidades</option>
+        </select>
+        <button id="btn-reset-ofertas" class="secondary">Limpiar</button>
+        <button id="btn-publicar-oferta" class="primary">📣 Publicar Oferta</button>
       </div>
     </section>
 

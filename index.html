@@ -103,18 +103,7 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="assets/core.ui.js?v=1"></script>
 
-  <script>
-    // Registro del Service Worker para habilitar PWA
-    // Usamos ruta relativa para que funcione tanto en la raíz como en un subdirectorio (GitHub Pages)
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('assets/sw.js')
-          .catch(function (err) {
-            console.error('[PWA] Error registrando service worker:', err);
-          });
-      });
-    }
-  </script>
+  <script src="assets/pwa.js"></script>
 
 </body>
 

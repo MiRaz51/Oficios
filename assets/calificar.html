@@ -18,93 +18,8 @@
     <link rel="stylesheet" href="styles.layout.css?v=1" />
     <link rel="stylesheet" href="styles.components.css?v=1" />
     <link rel="stylesheet" href="styles.css?v=3" />
+    <link rel="stylesheet" href="calificar.page.css?v=1" />
     <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-y: auto;
-        }
-
-        h1,
-        h2,
-        h3 {
-            font-family: 'Outfit', sans-serif;
-        }
-
-        .calificar-label {
-            display: block;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .calificar-meta {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 0.25rem;
-        }
-
-        .calificar-meta-opcional {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .calificar-meta-count {
-            color: var(--text-muted);
-        }
-
-        .calificar-resultado {
-            display: none;
-        }
-
-        .calificar-resultado-title {
-            font-size: 1.5rem;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .calificar-resultado-text {
-            color: var(--text-secondary);
-        }
-
-        .calificar-error {
-            display: none;
-            text-align: center;
-            padding: 2rem 0;
-        }
-
-        .calificar-error-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .calificar-error-title {
-            font-size: 1.5rem;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .calificar-error-text {
-            color: var(--text-secondary);
-        }
-
-        .calificar-error-link {
-            color: var(--accent-primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .calificar-footer {
-            text-align: center;
-            margin-top: 1rem;
-            opacity: 0.6;
-        }
-
-        .calificar-footer-text {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-    </style>
 </head>
 
 <body class="calificar-page">
@@ -160,7 +75,7 @@
                 <div class="calificar-error-icon">⚠️</div>
                 <h2 class="calificar-error-title">Enlace no válido</h2>
                 <p id="errorTexto" class="calificar-error-text">Este enlace ha expirado o ya fue utilizado.</p>
-                <div style="margin-top: 2rem;">
+                <div class="mt-2rem">
                     <a href="../index.html" class="calificar-error-link">Volver al inicio</a>
                 </div>
             </div>
