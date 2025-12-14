@@ -25,11 +25,19 @@ async function refreshAuthIfNeeded() {
         if (!window.pb || !window.pb.authStore || !window.pb.authStore.token) {
             return;
         }
+
         // Refresca el modelo de usuario (incluido verified) desde el servidor
         await window.pb.collection('users').authRefresh();
     } catch (e) {
         console.warn('[Auth] Error al refrescar la sesión, limpiando authStore:', e);
         try { window.pb.authStore.clear(); } catch (_) { }
+    }
+}
+
+function scrollPerfilAlInicio() {
+    const cont = document.querySelector('.perfil-container');
+    if (cont) {
+        cont.scrollTop = 0;
     }
 }
 
@@ -783,6 +791,9 @@ async function verPerfilUI(id) {
         actualizarBotonesNavegacion();
     }
 
+    // Colocar siempre el scroll del contenido al inicio al abrir/navegar
+    scrollPerfilAlInicio();
+
     // Abrir siempre el diálogo sin banner de "verificando información" para que
     // la experiencia sea más limpia.
     if (typeof dlg.showModal === 'function') {
@@ -1452,6 +1463,12 @@ function setupDialogListeners() {
         unlockAppScroll();
     });
 
+    // Botón de cierre superior (X) en móvil
+    $('#btnCerrarDialogTop')?.addEventListener('click', () => {
+        $('#dlg')?.close();
+        unlockAppScroll();
+    });
+
     $('#btnCerrarCalificar')?.addEventListener('click', () => {
         $('#dlgCalificar')?.close();
     });
@@ -1512,6 +1529,7 @@ function navegarAnterior() {
     const idx = __currentItems.findIndex(i => i.id === __currentPerfilId);
     if (idx > 0) {
         verPerfilUI(__currentItems[idx - 1].id);
+        scrollPerfilAlInicio();
     }
 }
 
@@ -1520,6 +1538,7 @@ function navegarSiguiente() {
     const idx = __currentItems.findIndex(i => i.id === __currentPerfilId);
     if (idx < __currentItems.length - 1) {
         verPerfilUI(__currentItems[idx + 1].id);
+        scrollPerfilAlInicio();
     }
 }
 
@@ -1558,6 +1577,12 @@ function ensureDialogNav() {
         $('#btnAnterior')?.addEventListener('click', navegarAnterior);
         $('#btnSiguiente')?.addEventListener('click', navegarSiguiente);
         $('#btnCerrarDialog')?.addEventListener('click', () => {
+            $('#dlg')?.close();
+            unlockAppScroll();
+        });
+
+        // Asegurar también el botón de cierre superior (X) si existe
+        $('#btnCerrarDialogTop')?.addEventListener('click', () => {
             $('#dlg')?.close();
             unlockAppScroll();
         });

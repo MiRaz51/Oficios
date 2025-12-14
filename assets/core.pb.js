@@ -5,7 +5,7 @@ console.log('[CORE] Init PocketBase config');
 // En cualquier otro host (GitHub Pages, Railway frontend, etc.) usamos la instancia en Railway.
 const POCKETBASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:8090'
-  : 'https://pocketbase-production-b066.up.railway.app';
+  : 'https://pocketbase-production-eecc.up.railway.app';
 
 const pb = new PocketBase(POCKETBASE_URL);
 

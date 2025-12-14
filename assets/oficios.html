@@ -35,11 +35,11 @@
       </select>
       <button id="btnReset" class="secondary">Limpiar</button>
 
-      <button id="btnSoyProfesional" class="primary">Tengo un oficio</button>
+      <button id="btnSoyProfesional" class="primary">🔎 Tengo un oficio</button>
 
       <div id="userMenu" class="user-menu">
         <button id="btnUserMenu" type="button" class="user-menu-button" aria-label="Menú de usuario">
-          <span id="userMenuIcon" class="user-menu-icon">⏻</span>
+          <span id="userMenuIcon" class="user-menu-icon">Menú</span>
         </button>
         <div id="userMenuDropdown" class="user-menu-dropdown">
           <button type="button" id="btnLoginCuenta">Iniciar sesión</button>
@@ -51,7 +51,7 @@
       </div>
     </section>
 
-    <div class="stats-container">
+    <div class="stats-container hidden">
       <div id="filtrosAplicados" class="filtros-aplicados"></div>
       <div class="stats-row">
         <div class="stat-item">
@@ -73,6 +73,9 @@
         <div class="dialog-header">
           <h3 id="dlgTitle">Perfil de oficio</h3>
           <div id="perfilFechaPublicacion" class="perfil-fecha-publicacion"></div>
+          <button type="button" id="btnCerrarDialogTop" class="dialog-close-mobile" aria-label="Cerrar perfil">
+            ✕
+          </button>
         </div>
         <div id="mensajeCargaMovil" class="mensaje-carga-movil"></div>
         <div class="dialog-container perfil-container">

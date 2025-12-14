@@ -509,10 +509,12 @@ td {
   /* Celda de acciones */
   td.actions-cell {
     flex-direction: row;
-    /* Botones lado a lado */
-    justify-content: space-between;
-    gap: var(--space-sm);
+    /* Botones lado a lado, centrados en la tarjeta */
+    justify-content: center;
+    gap: var(--space-md);
     padding-top: var(--space-lg);
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
     margin-top: var(--space-sm);
     border-top: 1px solid var(--border-medium);
   }
@@ -559,19 +561,79 @@ td {
     /* Una columna */
   }
 
+  /* Header del modal de perfil en móvil: título y fecha en columna */
+  .dialog-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dialog-header #perfilFechaPublicacion {
+    margin-top: 0.25rem;
+  }
+
+  /* Footer del modal en móvil */
   .dialog-footer {
     flex-direction: column;
   }
 
-  .dialog-footer button {
+  /* Botón principal (WhatsApp / enviar) ocupa todo el ancho */
+  .dialog-footer > button,
+  .dialog-footer-row > #btnContactarWhatsApp,
+  .dialog-footer-row > #btnCalificar {
     width: 100%;
-    margin-bottom: var(--space-sm);
+    margin-bottom: 0.4rem; /* menos espacio bajo el botón principal */
   }
 
-  .dialog-nav {
-    justify-content: space-between;
+  /* Fila de navegación solo con Atrás/Siguiente en móvil */
+  .dialog-footer-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem; /* reducir separación vertical general en el footer */
+  }
+
+  .dialog-footer-row .dialog-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
-    margin-top: var(--space-sm);
+    margin-top: 0.25rem; /* menos separación entre WhatsApp y navegación */
+    column-gap: var(--space-xs);
+  }
+
+  .dialog-footer-row .dialog-nav button {
+    width: 100%;
+    padding: 0.55rem 0.25rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  /* Ocultar el botón Cerrar del footer en móvil, usamos la X superior */
+  .btn-cerrar-footer {
+    display: none;
+  }
+
+  /* Botón de cierre (X) solo visible en móvil */
+  .dialog-close-mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-medium);
+    background: rgba(15, 23, 42, 0.02);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+  }
+
+  .dialog-close-mobile:hover {
+    background: var(--bg-secondary);
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
   }
 }
 
