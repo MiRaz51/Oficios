@@ -105,9 +105,10 @@
 
   <script>
     // Registro del Service Worker para habilitar PWA
+    // Usamos ruta relativa para que funcione tanto en la raíz como en un subdirectorio (GitHub Pages)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/assets/sw.js')
+        navigator.serviceWorker.register('assets/sw.js')
           .catch(function (err) {
             console.error('[PWA] Error registrando service worker:', err);
           });

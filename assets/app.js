@@ -776,25 +776,21 @@ async function verPerfilUI(id) {
     ensureDialogNav();
 
     if (itemCache) {
+        // Mostramos primero la información que ya tenemos en memoria para que el usuario
+        // vea el perfil inmediatamente.
         renderDetallePerfil(itemCache);
         actualizarBotonesAccion(itemCache);
         actualizarBotonesNavegacion();
-        if (typeof dlg.showModal === 'function') {
-            dlg.showModal();
-        } else {
-            dlg.setAttribute('open', 'true');
-        }
-        lockAppScroll();
-        mostrarMensajeCarga('Verificando información...', 'Sincronizando con servidor');
-    } else {
-        mostrarMensajeCarga('Cargando perfil...', 'Por favor espera');
-        if (typeof dlg.showModal === 'function') {
-            dlg.showModal();
-        } else {
-            dlg.setAttribute('open', 'true');
-        }
-        lockAppScroll();
     }
+
+    // Abrir siempre el diálogo sin banner de "verificando información" para que
+    // la experiencia sea más limpia.
+    if (typeof dlg.showModal === 'function') {
+        dlg.showModal();
+    } else {
+        dlg.setAttribute('open', 'true');
+    }
+    lockAppScroll();
 
     try {
         deshabilitarFormulario(true);

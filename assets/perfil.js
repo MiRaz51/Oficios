@@ -31,7 +31,7 @@
       setMensaje('Tu cuenta ha sido eliminada correctamente. Redirigiendo...', 'success');
 
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '../index.html';
       }, 1500);
     } catch (err) {
       console.error('[Perfil] Error eliminando cuenta:', err);
@@ -99,7 +99,7 @@
     if (btnLogoutPerfil) {
       btnLogoutPerfil.addEventListener('click', () => {
         try { pb.authStore.clear(); } catch (_) { }
-        window.location.href = '/';
+        window.location.href = '../index.html';
       });
     }
 

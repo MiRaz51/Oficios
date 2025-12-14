@@ -12,7 +12,7 @@
 
     try { pb.authStore.clear(); } catch (_) { }
     // Redirigir a la pantalla principal
-    window.location.href = '/';
+    window.location.href = '../index.html';
   }
 
   function resetInactividadTimer() {
@@ -127,7 +127,7 @@
     if (btnLogout) {
       btnLogout.addEventListener('click', () => {
         try { pb.authStore.clear(); } catch (_) { }
-        window.location.href = '/';
+        window.location.href = '../index.html';
       });
     }
 

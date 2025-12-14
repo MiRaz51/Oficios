@@ -49,18 +49,19 @@ Todo funciona directamente desde el navegador, sin necesidad de instalar nada.
 
 ### 2. Si ofreces tus servicios (tienes un oficio)
 
-1. En la página de oficios, usa la opción **"Tengo un oficio"** o similar.  
-2. Rellena el formulario con tu nombre, oficio, ubicación y número de WhatsApp.  
-3. Describe brevemente tu experiencia y tus habilidades.  
-4. Envía el formulario para publicar tu perfil en el catálogo.
+1. En la página de oficios, pulsa **"Tengo un oficio"**.  
+2. Si no has iniciado sesión, la aplicación te llevará primero a la pantalla de **cuenta** para que **inicies sesión** o **crees una cuenta nueva**.  
+3. Una vez con sesión iniciada y correo verificado, vuelve a oficios y completa el formulario con tu oficio, ubicación y número de WhatsApp (se toma de tu cuenta).  
+4. Describe brevemente tu experiencia y tus habilidades.  
+5. Envía el formulario para publicar tu perfil en el catálogo.
 
 ### 3. Si quieres publicar una oferta de empleo
 
 1. Entra en la sección de **ofertas**.  
-2. Pulsa en **"Publicar oferta"**.  
-3. Selecciona el oficio al que va dirigida la oferta.  
-4. Escribe la ubicación, modalidad y descripción del trabajo.  
-5. Indica un número de WhatsApp donde quieras recibir mensajes.  
+2. Pulsa en **"Publicar oferta"**. Si no tienes sesión iniciada, irás primero a la pantalla de cuenta para **iniciar sesión** o **crear una cuenta**.  
+3. Una vez iniciada sesión, se usará el WhatsApp de tu cuenta como número de contacto de la oferta.  
+4. Selecciona el oficio al que va dirigida la oferta.  
+5. Escribe la ubicación, modalidad y descripción del trabajo.  
 6. Envía el formulario para que la oferta quede visible para toda la comunidad.
 
 ---
@@ -74,15 +75,25 @@ Todo funciona directamente desde el navegador, sin necesidad de instalar nada.
 
 ---
 
-## Aspectos técnicos (resumen)
+## Sesión, seguridad y privacidad (resumen)
 
-- Aplicación web estática (HTML, CSS y JavaScript).  
-- Uso de un **backend ligero** para almacenar perfiles y ofertas.  
-- Comunicación por **HTTPS** cuando el servidor está correctamente configurado.
+- Para **publicar oficios u ofertas** es necesario tener una **cuenta de usuario** y haber iniciado sesión.  
+- El acceso se realiza mediante **correo electrónico + contraseña**, gestionados por PocketBase.  
+- El sistema cierra la sesión automáticamente tras un periodo de **inactividad prolongada**, por seguridad.  
 - No se almacenan contraseñas de WhatsApp ni se gestionan chats desde la web; sólo se crean enlaces de contacto.
 
-Para más detalles sobre tratamiento de datos y condiciones legales, consulta
-[Política de Privacidad](#privacy-modal) y [Términos de Uso](#terms-modal).
+Para más detalles sobre tratamiento de datos y condiciones legales, consulta los diálogos de **Política de Privacidad** y **Términos de Uso** accesibles desde el pie de página de la aplicación.
+
+---
+
+## Aspectos técnicos (resumen)
+
+- Aplicación web estática (HTML, CSS y JavaScript) servida como **PWA instalable** en dispositivos móviles y escritorio.  
+- Uso de **PocketBase** como backend ligero para usuarios, oficios, ofertas, matches y calificaciones.  
+- En desarrollo se utiliza una instancia local (`http://127.0.0.1:8090`) y en producción una instancia desplegada en la nube (Railway).  
+- Soporte de **modo offline básico** mediante *service worker* que cachea el esqueleto de la app para que cargue más rápido.  
+- Comunicación por **HTTPS** en despliegues productivos correctamente configurados.
+ 
 
 ---
 

@@ -48,9 +48,9 @@ Este documento recoge ideas de mejora que se han ido comentando para implementar
 
 ## 5. Futuras extensiones
 
-- **PWA / modo offline básico**
-  - Hacer instalable la web en el móvil.
-  - Cachear la última versión del catálogo para consultas rápidas.
+- **PWA / modo offline avanzado**
+  - La aplicación ya es instalable como PWA y cachea el *app shell* básico.  
+  - Mejora futura: cachear también **datos dinámicos** (último catálogo de oficios y ofertas) para permitir consultas rápidas incluso sin conexión.
 
 - **Métricas y analítica mínima**
   - Contar visitas a perfiles, filtros más usados, etc., para entender mejor el uso real de la aplicación.
