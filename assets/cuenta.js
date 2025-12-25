@@ -11,6 +11,10 @@
   const passwordError = document.getElementById('cuentaPasswordError');
   const btnOlvidoPassword = document.getElementById('btnOlvidoPassword');
   const btnIrRegistroDesdeLogin = document.getElementById('btnIrRegistroDesdeLogin');
+  const registroEmailExisteActions = document.getElementById('registroEmailExisteActions');
+  const btnIrLoginDesdeEmailExiste = document.getElementById('btnIrLoginDesdeEmailExiste');
+  const registroPostCreateActions = document.getElementById('registroPostCreateActions');
+  const btnIrLoginPostRegistro = document.getElementById('btnIrLoginPostRegistro');
 
   const params = new URLSearchParams(window.location.search);
   // cuenta.html está en la carpeta /assets, así que redirigimos a archivos hermanos
@@ -31,6 +35,24 @@
           if (timerId) clearTimeout(timerId);
           reject(e);
         });
+    });
+  }
+
+  if (btnIrLoginPostRegistro) {
+    btnIrLoginPostRegistro.addEventListener('click', () => {
+      setModeLogin();
+
+      try {
+        const email = document.getElementById('cuentaEmail')?.value?.trim();
+        const loginEmail = document.getElementById('loginEmail');
+        if (email && loginEmail) {
+          loginEmail.value = email;
+        }
+      } catch (_) {}
+
+      try {
+        formLogin?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (_) {}
     });
   }
 
@@ -74,6 +96,8 @@
     const txtLog = document.getElementById('textoLogin');
     if (txtReg) txtReg.style.display = '';
     if (txtLog) txtLog.style.display = 'none';
+    if (registroEmailExisteActions) registroEmailExisteActions.classList.add('is-hidden');
+    if (registroPostCreateActions) registroPostCreateActions.classList.add('is-hidden');
     setMensaje('', 'info');
   }
 
@@ -86,6 +110,8 @@
     const txtLog = document.getElementById('textoLogin');
     if (txtReg) txtReg.style.display = 'none';
     if (txtLog) txtLog.style.display = '';
+    if (registroEmailExisteActions) registroEmailExisteActions.classList.add('is-hidden');
+    if (registroPostCreateActions) registroPostCreateActions.classList.add('is-hidden');
     setMensaje('', 'info');
   }
 
@@ -98,6 +124,25 @@
       setModeRegistro();
       try {
         formRegistro?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (_) {}
+    });
+  }
+
+  // Botón que aparece solo cuando el correo ya existe, para pasar a iniciar sesión
+  if (btnIrLoginDesdeEmailExiste) {
+    btnIrLoginDesdeEmailExiste.addEventListener('click', () => {
+      setModeLogin();
+
+      try {
+        const email = document.getElementById('cuentaEmail')?.value?.trim();
+        const loginEmail = document.getElementById('loginEmail');
+        if (email && loginEmail) {
+          loginEmail.value = email;
+        }
+      } catch (_) {}
+
+      try {
+        formLogin?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } catch (_) {}
     });
   }
@@ -164,89 +209,62 @@
     }
 
     btnCrear.disabled = true;
-    btnCrear.textContent = 'Creando cuenta...';
-    setMensaje('Creando cuenta...', 'info');
-
     try {
-      // Intentar crear el usuario; los índices únicos de PocketBase evitarán duplicados
-      try {
-        await pb.collection('users').create({
-          email,
-          password,
-          passwordConfirm,
-          nombre,
-          whatsapp: whatsappRaw,
-        });
+      formRegistro?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-        await pb.collection('users').requestVerification(email);
-      } catch (createErr) {
-        console.error('[Cuenta] Error creando usuario en PocketBase:', createErr);
+      // Crear usuario en PocketBase y obtener su email efectivo
+      const created = await pb.collection('users').create({
+        email,
+        password,
+        passwordConfirm,
+        nombre,
+        whatsapp: whatsappRaw,
+      });
 
-        let handled = false;
+      const createdEmail = created?.email || email;
 
-        // Normalizar estructura de error de PocketBase
-        const rawData = createErr?.data?.data || createErr?.data || null;
-        const status = createErr?.status || createErr?.data?.status || null;
-
-        if (status === 400 && rawData && typeof rawData === 'object') {
-          const data = rawData;
-
-          // Recorremos todos los campos devueltos por PocketBase
-          for (const [field, info] of Object.entries(data)) {
-            const fieldName = String(field).toLowerCase();
-            const code = info?.code || '';
-
-            if (fieldName === 'password') {
-              setPasswordError('La contraseña debe tener al menos 8 caracteres.');
-              setMensaje('', 'error');
-              handled = true;
-            } else if (fieldName === 'email') {
-              // Correo ya registrado: mostrar mensaje y ofrecer botón para ir a Iniciar sesión
-              setMensaje('Ya existe una cuenta con ese correo. Cambia a la pestaña de Iniciar sesión para entrar.', 'error');
-              handled = true;
-            } else if (fieldName === 'whatsapp' || fieldName.includes('whatsapp')) {
-              setMensaje('Ya existe una cuenta utilizando ese número de WhatsApp. Usa Iniciar sesión o cambia el número.', 'error');
-              handled = true;
-            } else if (code === 'validation_not_unique') {
-              // Índice único sin nombre de campo claro
-              setMensaje('Alguno de los datos ya está asociado a otra cuenta (correo o WhatsApp).', 'error');
-              handled = true;
-            }
-          }
-
-          if (handled) {
-            return; // No continuamos ni dejamos que el catch externo sobreescriba el mensaje
-          }
+      // Solicitar a PocketBase que envíe el correo de verificación directamente
+      if (createdEmail) {
+        try {
+          await pb.collection('users').requestVerification(createdEmail);
+        } catch (apiErr) {
+          console.error('[Cuenta] Error solicitando verificación de correo en PocketBase:', apiErr);
         }
-
-        // Si llegamos aquí, no sabemos el detalle exacto, pero NO debemos continuar
-        setMensaje('No se pudo crear la cuenta. Revisa que el correo y el número de WhatsApp no estén ya asociados a otra cuenta.', 'error');
-        return;
+      } else {
+        console.error('[Cuenta] Usuario creado sin email válido.');
       }
 
-      // Autenticar solo si el usuario se creó correctamente
-      await pb.collection('users').authWithPassword(email, password);
-
-      setMensaje('Cuenta creada. Revisa tu correo para verificar tu email. Redirigiendo...', 'success');
-
-      setTimeout(() => {
-        window.location.href = returnTo;
-      }, 1200);
+      setMensaje('Cuenta creada. Revisa tu correo y verifica tu email para poder iniciar sesión.', 'success');
+      if (registroPostCreateActions) {
+        registroPostCreateActions.classList.remove('is-hidden');
+      }
     } catch (err) {
-      console.error('[Cuenta] Error creando o autenticando usuario:', err);
-      let msg = err?.message || 'Error desconocido creando la cuenta.';
-      if (err?.data?.data) {
-        const details = Object.entries(err.data.data)
-          .map(([field, e]) => `${field}: ${e.message}`)
-          .join('\n');
-        if (details) msg += '\n' + details;
-      }
-      setMensaje(msg, 'error');
+      console.error('[Cuenta] Error creando usuario en PocketBase:', err);
+      setMensaje('No se pudo crear la cuenta. Revisa que el correo y el número de WhatsApp no estén ya asociados a otra cuenta.', 'error');
     } finally {
       btnCrear.disabled = false;
       btnCrear.textContent = 'Crear cuenta y continuar';
     }
   });
+
+// Botón que aparece solo cuando el correo ya existe, para pasar a iniciar sesión
+if (btnIrLoginDesdeEmailExiste) {
+  btnIrLoginDesdeEmailExiste.addEventListener('click', () => {
+    setModeLogin();
+
+    try {
+      const email = document.getElementById('cuentaEmail')?.value?.trim();
+      const loginEmail = document.getElementById('loginEmail');
+      if (email && loginEmail) {
+        loginEmail.value = email;
+      }
+    } catch (_) {}
+
+    try {
+      formLogin?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (_) {}
+  });
+}
 
   formLogin?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -272,6 +290,11 @@
       }
 
       if (!user.verified) {
+        try {
+          if (window.pb && window.pb.authStore) {
+            window.pb.authStore.clear();
+          }
+        } catch (_) {}
         setMensaje('Tu correo aún no está verificado. Revisa el enlace de verificación enviado a tu email.', 'error');
         return;
       }
