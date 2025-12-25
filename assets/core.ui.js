@@ -14,6 +14,45 @@ window.esc = function (v) {
     .replace(/'/g, '&#39;');
 };
 
+// Helpers globales de sesión de usuario reutilizables
+window.getCurrentUser = function () {
+  try {
+    return window.pb && window.pb.authStore ? (window.pb.authStore.model || null) : null;
+  } catch (_) {
+    return null;
+  }
+};
+
+window.updateSessionIndicator = function (elementId) {
+  if (!elementId) return;
+  try {
+    var el = document.getElementById(elementId);
+    if (!el) return;
+
+    var user = window.getCurrentUser();
+    if (!user) {
+      el.textContent = 'No has iniciado sesión';
+      return;
+    }
+
+    var estado = user.verified ? 'verificado' : 'sin verificar';
+    el.textContent = 'Sesión: ' + (user.email || 'sin email') + ' (' + estado + ')';
+  } catch (e) {
+    console.warn('[Sesion] No se pudo actualizar el indicador de sesión:', e);
+  }
+};
+
+// Validación estándar de WhatsApp: exactamente 9 dígitos numéricos
+window.isValidWhatsapp9 = function (raw) {
+  if (!raw) return false;
+  try {
+    var digits = String(raw).replace(/\D/g, '');
+    return /^\d{9}$/.test(digits);
+  } catch (_) {
+    return false;
+  }
+};
+
  window.formatFechaCorta = function (isoString) {
    if (!isoString) return '';
    try {

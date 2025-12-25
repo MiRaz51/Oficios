@@ -39,18 +39,24 @@
 
         <div class="form-group">
           <label for="cuentaEmail">Correo electrónico *</label>
-          <input type="email" id="cuentaEmail" required placeholder="tucorreo@ejemplo.com" />
+          <input type="text" id="cuentaEmail" required placeholder="tucorreo@ejemplo.com" />
         </div>
 
         <div class="form-group">
           <label for="cuentaPassword">Contraseña *</label>
-          <input type="password" id="cuentaPassword" required minlength="6" />
+          <div class="password-wrapper">
+            <input type="password" id="cuentaPassword" required minlength="8" />
+            <button type="button" id="btnTogglePassword" class="password-toggle" style="display:none;" aria-label="Mostrar u ocultar contraseña">👁</button>
+          </div>
           <small id="cuentaPasswordError" class="field-error"></small>
         </div>
 
         <div class="form-group">
           <label for="cuentaPasswordConfirm">Confirmar contraseña *</label>
-          <input type="password" id="cuentaPasswordConfirm" required minlength="6" />
+          <div class="password-wrapper">
+            <input type="password" id="cuentaPasswordConfirm" required minlength="6" />
+            <button type="button" id="btnTogglePasswordConfirm" class="password-toggle" style="display:none;" aria-label="Mostrar u ocultar contraseña de confirmación">👁</button>
+          </div>
         </div>
 
         <div class="dialog-footer">
@@ -60,6 +66,8 @@
 
         <p class="text-center cuenta-links-bottom is-hidden" id="registroEmailExisteActions">
           <button type="button" id="btnIrLoginDesdeEmailExiste" class="link-button">¿Ya tienes cuenta? Iniciar sesión</button>
+          <span class="separator">|</span>
+          <button type="button" id="btnReenviarVerificacion" class="link-button">Reenviar correo de verificación</button>
         </p>
 
         <p class="text-center cuenta-links-bottom is-hidden" id="registroPostCreateActions">
@@ -71,22 +79,25 @@
       <form id="frmCuentaLogin" class="form-vertical is-hidden">
         <div class="form-group">
           <label for="loginEmail">Correo electrónico *</label>
-          <input type="email" id="loginEmail" required placeholder="tucorreo@ejemplo.com" />
+          <input type="text" id="loginEmail" required placeholder="tucorreo@ejemplo.com" />
         </div>
 
         <div class="form-group">
           <label for="loginPassword">Contraseña *</label>
-          <input type="password" id="loginPassword" required minlength="6" />
+          <div class="password-wrapper">
+            <input type="password" id="loginPassword" required />
+            <button type="button" id="btnTogglePasswordLogin" class="password-toggle" style="display:none;" aria-label="Mostrar u ocultar contraseña de inicio de sesión">👁</button>
+          </div>
         </div>
 
         <div class="dialog-footer">
           <button type="submit" id="btnLogin" class="primary">Iniciar sesión</button>
           <button type="button" id="btnCancelarLogin" class="secondary">Cancelar</button>
         </div>
-        <p class="text-center cuenta-links-top">
+        <p class="text-center cuenta-links-top is-hidden" id="loginLinksTop">
           <button type="button" id="btnOlvidoPassword" class="link-button">¿Has olvidado tu contraseña?</button>
         </p>
-        <p class="text-center cuenta-links-bottom">
+        <p class="text-center cuenta-links-bottom is-hidden" id="loginLinksBottom">
           <button type="button" id="btnIrRegistroDesdeLogin" class="link-button">¿No tienes cuenta? Crear una nueva</button>
         </p>
       </form>

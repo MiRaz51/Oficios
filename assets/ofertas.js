@@ -1,20 +1,8 @@
 const COLLECTION_OFERTAS = 'ofertas';
 
 function actualizarIndicadorSesionOfertas() {
-    try {
-        const el = document.getElementById('sessionStatusOfertas');
-        if (!el) return;
-
-        const user = window.pb?.authStore?.model;
-        if (!user) {
-            el.textContent = 'No has iniciado sesión';
-            return;
-        }
-
-        const estado = user.verified ? 'verificado' : 'sin verificar';
-        el.textContent = `Sesión: ${user.email || 'sin email'} (${estado})`;
-    } catch (e) {
-        console.warn('[Sesion] No se pudo actualizar el indicador de sesión en ofertas:', e);
+    if (typeof window.updateSessionIndicator === 'function') {
+        window.updateSessionIndicator('sessionStatusOfertas');
     }
 }
 
@@ -177,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const whatsappPerfil = (currentUser.whatsapp || '').replace(/\D/g, '');
-            if (!/^\d{9}$/.test(whatsappPerfil)) {
+            if (!window.isValidWhatsapp9 || !window.isValidWhatsapp9(whatsappPerfil)) {
                 alert('Antes de publicar una oferta, configura un número de WhatsApp válido (9 dígitos) en la página "Mi perfil".');
                 window.location.href = 'perfil.html';
                 return;
@@ -223,8 +211,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const whatsappPerfil = (currentUser.whatsapp || '').replace(/\D/g, '');
-            if (!/^\d{9}$/.test(whatsappPerfil)) {
+            if (!window.isValidWhatsapp9 || !window.isValidWhatsapp9(whatsappPerfil)) {
                 const msgWpInvalido = 'El WhatsApp de contacto de tu cuenta no es válido. Configúralo en "Mi perfil" (9 dígitos).';
+
                 if (typeof window.showToast === 'function') {
                     window.showToast(msgWpInvalido, 'error');
                 } else {

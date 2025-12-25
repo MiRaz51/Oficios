@@ -906,6 +906,52 @@ td[data-label="Oficio"] {
   font-size: 0.75rem;
   color: var(--text-secondary);
 }
+
+/* ========== CAMPOS DE CONTRASEÑA CON ICONO DE OJO ========== */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input[type="password"],
+.password-wrapper input[type="text"] {
+  width: 100%;
+  padding-right: 2.5rem; /* espacio para el icono de ojo */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-muted);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:focus {
+  outline: none;
+}
+
+.password-toggle:hover {
+  color: var(--text-primary);
+}
+
+/* Estado de "ojo tachado" cuando la contraseña está visible */
+.password-toggle.is-visible::after {
+  content: '';
+  position: absolute;
+  width: 1.3rem;
+  height: 2px;
+  background-color: currentColor;
+  transform: rotate(-35deg);
+}
+
 @media print {
   .no-print {
     display: none !important;

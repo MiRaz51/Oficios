@@ -92,20 +92,8 @@ function toTitleCase(str) {
 }
 
 function actualizarIndicadorSesion() {
-    try {
-        const el = document.getElementById('sessionStatus');
-        if (!el) return;
-
-        const user = window.pb?.authStore?.model;
-        if (!user) {
-            el.textContent = 'No has iniciado sesión';
-            return;
-        }
-
-        const estado = user.verified ? 'verificado' : 'sin verificar';
-        el.textContent = `Sesión: ${user.email || 'sin email'} (${estado})`;
-    } catch (e) {
-        console.warn('[Sesion] No se pudo actualizar el indicador de sesión:', e);
+    if (typeof window.updateSessionIndicator === 'function') {
+        window.updateSessionIndicator('sessionStatus');
     }
 }
 
@@ -731,7 +719,7 @@ function setupEventListeners() {
             }
 
             const whatsappPerfil = (currentUser.whatsapp || '').replace(/\D/g, '');
-            if (!/^\d{9}$/.test(whatsappPerfil)) {
+            if (!window.isValidWhatsapp9 || !window.isValidWhatsapp9(whatsappPerfil)) {
                 alert('Antes de registrar tu oficio, configura un número de WhatsApp válido (9 dígitos) en la página "Mi perfil".');
                 window.location.href = 'perfil.html';
                 return;
@@ -775,7 +763,7 @@ function validarFormularioRegistro() {
     if (whatsappInput) {
         const value = whatsappInput.value.trim();
         // Marcar visualmente si el formato de WhatsApp no es de 9 dígitos
-        if (value && !/^\d{9}$/.test(value)) {
+        if (value && (!window.isValidWhatsapp9 || !window.isValidWhatsapp9(value))) {
             whatsappInput.classList.add('input-error');
         } else {
             whatsappInput.classList.remove('input-error');
@@ -1139,7 +1127,7 @@ async function uiEnviarRegistro(e) {
     const whatsappLocal = $('#regWhatsapp').value.trim();
     if (!whatsappLocal) {
         errores.push({ id: 'regWhatsapp', mensaje: 'Introduce tu número de WhatsApp.' });
-    } else if (!/^\d{9}$/.test(whatsappLocal)) {
+    } else if (!window.isValidWhatsapp9 || !window.isValidWhatsapp9(whatsappLocal)) {
         errores.push({ id: 'regWhatsapp', mensaje: 'El WhatsApp debe tener exactamente 9 dígitos numéricos (ej: 612345678).' });
     }
 

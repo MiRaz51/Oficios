@@ -177,7 +177,7 @@
           return;
         }
 
-        if (whatsappRaw && !/^[0-9]{9}$/.test(whatsappRaw)) {
+        if (whatsappRaw && (!window.isValidWhatsapp9 || !window.isValidWhatsapp9(whatsappRaw))) {
           setMensaje('El WhatsApp debe tener exactamente 9 dígitos numéricos.', 'error');
           return;
         }

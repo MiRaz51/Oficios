@@ -10,11 +10,28 @@
   const mensaje = document.getElementById('cuentaMensaje');
   const passwordError = document.getElementById('cuentaPasswordError');
   const btnOlvidoPassword = document.getElementById('btnOlvidoPassword');
+  const btnTogglePassword = document.getElementById('btnTogglePassword');
+  const btnTogglePasswordConfirm = document.getElementById('btnTogglePasswordConfirm');
+  const btnTogglePasswordLogin = document.getElementById('btnTogglePasswordLogin');
   const btnIrRegistroDesdeLogin = document.getElementById('btnIrRegistroDesdeLogin');
+  const loginLinksTop = document.getElementById('loginLinksTop');
+  const loginLinksBottom = document.getElementById('loginLinksBottom');
   const registroEmailExisteActions = document.getElementById('registroEmailExisteActions');
+  const btnReenviarVerificacion = document.getElementById('btnReenviarVerificacion');
   const btnIrLoginDesdeEmailExiste = document.getElementById('btnIrLoginDesdeEmailExiste');
   const registroPostCreateActions = document.getElementById('registroPostCreateActions');
   const btnIrLoginPostRegistro = document.getElementById('btnIrLoginPostRegistro');
+
+  // Asegurarnos de que los ojos estén ocultos al cargar la página
+  if (btnTogglePassword) {
+    btnTogglePassword.style.display = 'none';
+  }
+  if (btnTogglePasswordConfirm) {
+    btnTogglePasswordConfirm.style.display = 'none';
+  }
+  if (btnTogglePasswordLogin) {
+    btnTogglePasswordLogin.style.display = 'none';
+  }
 
   const params = new URLSearchParams(window.location.search);
   // cuenta.html está en la carpeta /assets, así que redirigimos a archivos hermanos
@@ -35,6 +52,30 @@
           if (timerId) clearTimeout(timerId);
           reject(e);
         });
+    });
+  }
+
+  // Botón para reenviar correo de verificación cuando el correo ya existe
+  if (btnReenviarVerificacion) {
+    btnReenviarVerificacion.addEventListener('click', async () => {
+      const email = document.getElementById('cuentaEmail')?.value?.trim();
+      if (!email) {
+        setMensaje('Introduce tu correo electrónico en el formulario para reenviar la verificación.', 'error');
+        return;
+      }
+
+      btnReenviarVerificacion.disabled = true;
+      setMensaje('Enviando un nuevo correo de verificación...', 'info');
+
+      try {
+        await pb.collection('users').requestVerification(email);
+        setMensaje('Si existe una cuenta pendiente de verificación con ese correo, te hemos enviado un nuevo email.', 'success');
+      } catch (err) {
+        console.error('[Cuenta] Error reenviando verificación:', err);
+        setMensaje('No se pudo reenviar el correo de verificación. Inténtalo de nuevo más tarde.', 'error');
+      } finally {
+        btnReenviarVerificacion.disabled = false;
+      }
     });
   }
 
@@ -87,6 +128,24 @@
     passwordError.textContent = texto || '';
   }
 
+  function setupPasswordToggle(buttonEl, inputId) {
+    if (!buttonEl) return;
+    const inputEl = document.getElementById(inputId);
+    if (!inputEl) return;
+
+    buttonEl.addEventListener('click', () => {
+      const isHidden = inputEl.type === 'password';
+      inputEl.type = isHidden ? 'text' : 'password';
+      // Usar siempre el mismo icono de ojo y marcar visible con una clase para el estilo de "ojo tachado"
+      buttonEl.textContent = '👁';
+      if (isHidden) {
+        buttonEl.classList.add('is-visible');
+      } else {
+        buttonEl.classList.remove('is-visible');
+      }
+    });
+  }
+
   function setModeRegistro() {
     if (tabRegistro) tabRegistro.classList.add('active');
     if (tabLogin) tabLogin.classList.remove('active');
@@ -98,6 +157,10 @@
     if (txtLog) txtLog.style.display = 'none';
     if (registroEmailExisteActions) registroEmailExisteActions.classList.add('is-hidden');
     if (registroPostCreateActions) registroPostCreateActions.classList.add('is-hidden');
+    if (loginLinksTop) loginLinksTop.classList.add('is-hidden');
+    if (loginLinksBottom) loginLinksBottom.classList.add('is-hidden');
+    if (btnTogglePassword) btnTogglePassword.style.display = 'none';
+    if (btnTogglePasswordConfirm) btnTogglePasswordConfirm.style.display = 'none';
     setMensaje('', 'info');
   }
 
@@ -106,17 +169,32 @@
     if (tabRegistro) tabRegistro.classList.remove('active');
     if (formLogin) formLogin.style.display = '';
     if (formRegistro) formRegistro.style.display = 'none';
+    // Asegurar que la contraseña de login se muestre siempre oculta al entrar en este modo
+    try {
+      const loginPasswordInput = document.getElementById('loginPassword');
+      if (loginPasswordInput) {
+        loginPasswordInput.type = 'password';
+      }
+    } catch (_) {}
     const txtReg = document.getElementById('textoRegistro');
     const txtLog = document.getElementById('textoLogin');
     if (txtReg) txtReg.style.display = 'none';
     if (txtLog) txtLog.style.display = '';
     if (registroEmailExisteActions) registroEmailExisteActions.classList.add('is-hidden');
     if (registroPostCreateActions) registroPostCreateActions.classList.add('is-hidden');
+    if (loginLinksTop) loginLinksTop.classList.add('is-hidden');
+    if (loginLinksBottom) loginLinksBottom.classList.add('is-hidden');
+    if (btnTogglePasswordLogin) btnTogglePasswordLogin.style.display = 'none';
     setMensaje('', 'info');
   }
 
   tabRegistro?.addEventListener('click', setModeRegistro);
   tabLogin?.addEventListener('click', setModeLogin);
+
+  // Inicializar botones de mostrar/ocultar contraseña
+  setupPasswordToggle(btnTogglePassword, 'cuentaPassword');
+  setupPasswordToggle(btnTogglePasswordConfirm, 'cuentaPasswordConfirm');
+  setupPasswordToggle(btnTogglePasswordLogin, 'loginPassword');
 
   // Botón dentro del formulario de login para ir a crear cuenta
   if (btnIrRegistroDesdeLogin) {
@@ -192,18 +270,37 @@
 
     setPasswordError('');
 
-    if (!nombre || !whatsappRaw || !email || !password || !passwordConfirm) {
+    // Validación de campos obligatorios (excepto email, que se valida aparte)
+    if (!nombre || !whatsappRaw || !password || !passwordConfirm) {
       setMensaje('Por favor, completa todos los campos obligatorios.', 'error');
+      return;
+    }
+
+    // Validación completa de correo: no vacío + formato usuario@dominio.tld
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!email || !emailPattern.test(email)) {
+      setMensaje('Introduce un correo electrónico válido (ejemplo@dominio.com).', 'error');
+      return;
+    }
+
+    // Validación de contraseña: mínimo 8 caracteres, solo letras y números, con al menos una letra y un número
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!passwordPattern.test(password)) {
+      const msgPwd = 'La contraseña debe tener al menos 8 caracteres y contener letras y números (solo letras y números).';
+      setPasswordError(msgPwd);
+      setMensaje(msgPwd, 'error');
       return;
     }
 
     if (password !== passwordConfirm) {
       setPasswordError('Las contraseñas no coinciden.');
-      setMensaje('', 'error');
+      setMensaje('Las contraseñas no coinciden.', 'error');
+      if (btnTogglePassword) btnTogglePassword.style.display = '';
+      if (btnTogglePasswordConfirm) btnTogglePasswordConfirm.style.display = '';
       return;
     }
 
-    if (!/^[0-9]{9}$/.test(whatsappRaw)) {
+    if (!window.isValidWhatsapp9 || !window.isValidWhatsapp9(whatsappRaw)) {
       setMensaje('El WhatsApp debe tener exactamente 9 dígitos numéricos.', 'error');
       return;
     }
@@ -240,7 +337,23 @@
       }
     } catch (err) {
       console.error('[Cuenta] Error creando usuario en PocketBase:', err);
-      setMensaje('No se pudo crear la cuenta. Revisa que el correo y el número de WhatsApp no estén ya asociados a otra cuenta.', 'error');
+
+      const emailError = err?.data?.data?.email;
+      const whatsappError = err?.data?.data?.whatsapp;
+
+      if (emailError) {
+        setMensaje('Ya existe una cuenta con ese correo electrónico. Puedes ir a iniciar sesión o reenviar el correo de verificación.', 'error');
+        if (registroEmailExisteActions) {
+          registroEmailExisteActions.classList.remove('is-hidden');
+        }
+      } else if (whatsappError) {
+        setMensaje('Ya existe una cuenta asociada a este número de WhatsApp. Usa ese número para iniciar sesión con tu cuenta existente.', 'error');
+        if (registroEmailExisteActions) {
+          registroEmailExisteActions.classList.remove('is-hidden');
+        }
+      } else {
+        setMensaje('No se pudo crear la cuenta. Revisa que el correo y el número de WhatsApp no estén ya asociados a otra cuenta.', 'error');
+      }
     } finally {
       btnCrear.disabled = false;
       btnCrear.textContent = 'Crear cuenta y continuar';
@@ -277,6 +390,20 @@ if (btnIrLoginDesdeEmailExiste) {
       return;
     }
 
+    // Validación de formato de correo igual que en el registro
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailPattern.test(email)) {
+      setMensaje('Introduce un correo electrónico válido (ejemplo@dominio.com).', 'error');
+      return;
+    }
+
+    // Validación de contraseña igual que en el registro: mínimo 8 caracteres, letras y números
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!passwordPattern.test(password)) {
+      setMensaje('La contraseña debe tener al menos 8 caracteres y contener letras y números (solo letras y números).', 'error');
+      return;
+    }
+
     btnLogin.disabled = true;
     btnLogin.textContent = 'Iniciando sesión...';
     setMensaje('Iniciando sesión...', 'info');
@@ -307,6 +434,8 @@ if (btnIrLoginDesdeEmailExiste) {
 
       if (err && err.message === 'timeout') {
         setMensaje('El servidor está tardando en responder. Puede estar iniciándose. Inténtalo de nuevo en unos segundos.', 'error');
+        // En timeout consideramos que también puede ayudar ver la contraseña
+        if (btnTogglePasswordLogin) btnTogglePasswordLogin.style.display = '';
         return;
       }
 
@@ -318,6 +447,11 @@ if (btnIrLoginDesdeEmailExiste) {
         if (details) msg += '\n' + details;
       }
       setMensaje(msg, 'error');
+
+      // Mostrar opciones adicionales de ayuda solo tras un fallo real de login
+      if (loginLinksTop) loginLinksTop.classList.remove('is-hidden');
+      if (loginLinksBottom) loginLinksBottom.classList.remove('is-hidden');
+      if (btnTogglePasswordLogin) btnTogglePasswordLogin.style.display = '';
     } finally {
       btnLogin.disabled = false;
       btnLogin.textContent = 'Iniciar sesión';
